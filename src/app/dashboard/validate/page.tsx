@@ -44,7 +44,8 @@ export default function Page(): React.JSX.Element {
       <ValidateFilters />
       <Grid container spacing={3}>
         <Grid lg={12} md={12} xs={12}>
-          {/* <Alert severity="error">Certificate not found</Alert> */}
+          <Alert severity="error" sx={{ marginBottom: 2 }}>Certificate not found</Alert>
+
           <CardMedia
             component="img"
             // image={`https://ipfs.io/ipfs/${certificate.ipfsHash}`}

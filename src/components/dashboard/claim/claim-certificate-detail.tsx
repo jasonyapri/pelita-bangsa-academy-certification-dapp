@@ -69,7 +69,7 @@ export function ClaimCertificateDetail(): React.JSX.Element {
               </TableRow>
               <TableRow hover>
                 <TableCell variant='head'>
-                   Date Acquired
+                   Date Issued
                 </TableCell>
                 <TableCell>
                   Thursday, 5 September 2024
