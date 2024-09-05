@@ -48,31 +48,32 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
-            <Tooltip title="Search">
+            {/* <Tooltip title="Search">
               <IconButton>
                 <MagnifyingGlassIcon />
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-            <Tooltip title="Contacts">
+            {/* <Tooltip title="Contacts">
               <IconButton>
                 <UsersIcon />
               </IconButton>
-            </Tooltip>
-            <Tooltip title="Notifications">
+            </Tooltip> */}
+            {/* <Tooltip title="Notifications">
               <Badge badgeContent={4} color="success" variant="dot">
                 <IconButton>
                   <BellIcon />
                 </IconButton>
               </Badge>
-            </Tooltip>
-            <Avatar
+            </Tooltip> */}
+            {/* <Avatar
               onClick={userPopover.handleOpen}
               ref={userPopover.anchorRef}
               src="/assets/avatar.png"
               sx={{ cursor: 'pointer' }}
-            />
+            /> */}
+            Connect Wallet
           </Stack>
         </Stack>
       </Box>
