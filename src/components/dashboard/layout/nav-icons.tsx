@@ -11,6 +11,8 @@ import { HandWithdraw as HandWithdrawIcon } from '@phosphor-icons/react/dist/ssr
 import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
 import { Signature as SignatureIcon } from '@phosphor-icons/react/dist/ssr/Signature';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
+import { CloudArrowUp as CloudArrowUpIcon } from '@phosphor-icons/react/dist/ssr/CloudArrowUp';
+import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
@@ -23,6 +25,8 @@ export const navIcons = {
   'certificate': CertificateIcon,
   'signature': SignatureIcon,
   'magnifying-glass': MagnifyingGlassIcon,
+  'cloud-arrow-up': CloudArrowUpIcon,
+  'file-arrow-up': FileArrowUpIcon,
   user: UserIcon,
   users: UsersIcon,
 } as Record<string, Icon>;

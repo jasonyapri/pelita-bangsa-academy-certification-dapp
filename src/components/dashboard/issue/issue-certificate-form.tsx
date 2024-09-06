@@ -13,7 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Grid from '@mui/material/Unstable_Grid2';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
 
 const certificateTypes = [
   { value: 'bootcamp', label: 'Bootcamp' },
@@ -84,13 +84,13 @@ export function IssueCertificateForm(): React.JSX.Element {
               role={undefined}
               variant="contained"
               tabIndex={-1}
-              startIcon={<CloudUploadIcon />}
+              startIcon={<FileArrowUpIcon />}
             >
-              Upload files
+              Upload file
               <VisuallyHiddenInput
                 type="file"
                 onChange={(event) => console.log(event.target.files)}
-                multiple
+                // multiple
               />
             </Button>
           </Grid>
