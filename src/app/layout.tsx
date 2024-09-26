@@ -14,12 +14,22 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+const activeChain = "mumbai"
+
 export default function Layout({ children }: LayoutProps): React.JSX.Element {
+
+  const thirdWebProviderProps = {
+    activeChain: "ethereum",
+    clientId: process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID
+  }
+
   return (
     <html lang="en">
       <body>
         <LocalizationProvider>
-          <ThirdwebProvider>
+          <ThirdwebProvider
+            {...thirdWebProviderProps}
+          >
             <UserProvider>
               <ThemeProvider>{children}</ThemeProvider>
             </UserProvider>
