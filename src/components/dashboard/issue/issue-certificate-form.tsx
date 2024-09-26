@@ -18,7 +18,7 @@ import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/F
 import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
-import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react"
+import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton } from "thirdweb/react"
 import { PBACERT } from "@/app/constants/contracts";
 
 const certificateCategories = [
@@ -67,28 +67,11 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [fullName, setFullName] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [isLoadingIssue, setIsLoadingIssue] = useState(false);
-  
-  const issueCertificate = async () => {
-    setIsLoadingIssue(true);
-    const studentAddress = "0x47331edc7220ad93D62130CE64c10F7166F4c947";
-    const _tokenURI = "https://pelitabangsa.co.id";
-    const dataHash = "0xdc10d28bd930d9a231dfce13798cb3c8a610c24ce69112195b25dfe442c339ce";
-    const fileHash = "0xfe301f3f0cab010a4a67d507e6c4ef874a2ebd21f5669684663d56136de08719";
-
-    const transaction = prepareContractCall({ 
-      contract, 
-      method: "function issueCertificate(address studentAddress, string _tokenURI, bytes32 dataHash, bytes32 fileHash)", 
-      params: [studentAddress, _tokenURI, dataHash, fileHash] 
-    });
-    sendTransaction(transaction);
-    setIsLoadingIssue(false);
-  }
 
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        issueCertificate();
       }}
     >
       <Card>
@@ -214,7 +197,34 @@ export function IssueCertificateForm(): React.JSX.Element {
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button type="submit" variant="contained" disabled={isLoadingIssue}>Issue Certificate</Button>
+          {/* <Button type="submit" variant="contained" disabled={isLoadingIssue}>Issue Certificate</Button> */}
+          <TransactionButton
+            type="submit"
+            transaction={() => {
+              const studentAddress = "0x47331edc7220ad93D62130CE64c10F7166F4c947";
+              const _tokenURI = "https://pelitabangsa.co.id";
+              const dataHash = "0xdc10d28bd930d9a231dfce13798cb3c8a610c24ce69112195b25dfe442c339ce";
+              const fileHash = "0xfe301f3f0cab010a4a67d507e6c4ef874a2ebd21f5669684663d56136de08719";
+
+              const tx = prepareContractCall({ 
+                contract, 
+                method: "function issueCertificate(address studentAddress, string _tokenURI, bytes32 dataHash, bytes32 fileHash)", 
+                params: [studentAddress, _tokenURI, dataHash, fileHash] 
+              });
+              return tx
+            }}
+            onTransactionSent={(result) => {
+              console.log("Transaction submitted", result.transactionHash);
+            }}
+            onTransactionConfirmed={(receipt) => {
+              console.log("Transaction confirmed", receipt.transactionHash);
+            }}
+            onError={(error) => {
+              console.error("Transaction error", error);
+            }}
+          >
+            Issue Certificate
+          </TransactionButton>
         </CardActions>
       </Card>
     </form>
