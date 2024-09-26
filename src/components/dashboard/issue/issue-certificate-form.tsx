@@ -47,12 +47,12 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 export function IssueCertificateForm(): React.JSX.Element {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (event: any) => {
     setFile(event.target.files[0]);
   };
-  
+
   const contract = getContract({
     client,
     chain: baseSepolia,
@@ -75,10 +75,6 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
   const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
   const [description, setDescription] = useState("This is to certify that this person has successfully completed a 3-month Blockchain Developer Bootcamp by Pelita Bangsa Academy.");
-
-  useEffect(() => {
-    console.log(walletAddress);
-  }, [walletAddress])
 
   return (
     <form
@@ -218,12 +214,17 @@ export function IssueCertificateForm(): React.JSX.Element {
               const dataHash = "0xdc10d28bd930d9a231dfce13798cb3c8a610c24ce69112195b25dfe442c339ce";
               const fileHash = "0xfe301f3f0cab010a4a67d507e6c4ef874a2ebd21f5669684663d56136de08719";
 
+              if (!file) {
+                console.error("File is not uploaded yet.");
+                return Promise.reject(new Error("File is not uploaded yet."));;
+              }
+
               const tx = prepareContractCall({ 
                 contract, 
                 method: "function issueCertificate(address studentAddress, string _tokenURI, bytes32 dataHash, bytes32 fileHash)", 
                 params: [studentAddress, _tokenURI, dataHash, fileHash] 
               });
-              return tx
+              return tx;
             }}
             onTransactionSent={(result) => {
               toast.info("Issuing certificate...");
