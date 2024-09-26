@@ -52,10 +52,6 @@ export function IssueCertificateForm(): React.JSX.Element {
   const handleFileChange = (event: any) => {
     setFile(event.target.files[0]);
   };
-
-  useEffect(() => {
-    console.log('File changed:', file);
-  }, [file]);
   
   const contract = getContract({
     client,
@@ -65,9 +61,24 @@ export function IssueCertificateForm(): React.JSX.Element {
 
   const { mutate: sendTransaction } = useSendTransaction();
 
-  const [fullName, setFullName] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
-  const [isLoadingIssue, setIsLoadingIssue] = useState(false);
+  const [fullName, setFullName] = useState("Jason Yapri");
+  const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
+  const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
+  const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
+  const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
+  const [certificateType, setCertificateType] = useState("Certificate of Completion");
+  const [cohort, setCohort] = useState(1);
+  const [duration, setDuration] = useState("21 sessions");
+  const [startDate, setStartDate] = useState("June 11, 2024");
+  const [endDate, setEndDate] = useState("August 29, 2024");
+  const [instructor1, setInstructor1] = useState("Jason Yapri");
+  const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
+  const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
+  const [description, setDescription] = useState("This is to certify that this person has successfully completed a 3-month Blockchain Developer Bootcamp by Pelita Bangsa Academy.");
+
+  useEffect(() => {
+    console.log(walletAddress);
+  }, [walletAddress])
 
   return (
     <form
@@ -83,31 +94,31 @@ export function IssueCertificateForm(): React.JSX.Element {
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Full name</InputLabel>
-                <OutlinedInput defaultValue="Jason Yapri" label="Full name" name="fullName" />
+                <OutlinedInput defaultValue="Jason Yapri" label="Full name" name="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Wallet address</InputLabel>
-                <OutlinedInput defaultValue="0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7" label="Wallet address" name="walletAddress" />
+                <OutlinedInput defaultValue="0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7" label="Wallet address" name="walletAddress"  value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Certificate Name</InputLabel>
-                <OutlinedInput defaultValue="Blockchain Developer Bootcamp" label="Certificate Name" name="certificateName" />
+                <OutlinedInput defaultValue="Blockchain Developer Bootcamp" label="Certificate Name" name="certificateName" value={certificateName} onChange={(e) => setCertificateName(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Issuer</InputLabel>
-                <OutlinedInput defaultValue="Pelita Bangsa Academy" label="Issuer" name="issuer" />
+                <OutlinedInput defaultValue="Pelita Bangsa Academy" label="Issuer" name="issuer" value={issuer} onChange={(e) => setIssuer(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth>
                 <InputLabel>Certificate Category</InputLabel>
-                <Select defaultValue="Bootcamp" label="Certificate Category" name="certificateCategory" variant="outlined">
+                <Select defaultValue="Bootcamp" label="Certificate Category" name="certificateCategory" variant="outlined" value={certificateCategory} onChange={(e) => setCertificateCategory(e.target.value)}>
                   {certificateCategories.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
@@ -119,7 +130,7 @@ export function IssueCertificateForm(): React.JSX.Element {
             <Grid md={6} xs={12}>
               <FormControl fullWidth>
                 <InputLabel>Certificate Type</InputLabel>
-                <Select defaultValue="Certificate of Completion" label="Certificate Type" name="certificateType" variant="outlined">
+                <Select defaultValue="Certificate of Completion" label="Certificate Type" name="certificateType" variant="outlined" value={certificateType} onChange={(e) => setCertificateType(e.target.value)}>
                   {certificateTypes.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
@@ -131,43 +142,43 @@ export function IssueCertificateForm(): React.JSX.Element {
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Cohort</InputLabel>
-                <OutlinedInput defaultValue="1" label="Cohort" name="cohort" type="number" />
+                <OutlinedInput defaultValue="1" label="Cohort" name="cohort" type="number" value={cohort} onChange={(e) => setCohort(Number(e.target.value))} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Duration</InputLabel>
-                <OutlinedInput defaultValue="21 sessions" label="Duration" name="duration" />
+                <OutlinedInput defaultValue="21 sessions" label="Duration" name="duration" value={duration} onChange={(e) => setDuration(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Start Date</InputLabel>
-                <OutlinedInput defaultValue="June 11, 2024" label="Start Date" name="startDate" />
+                <OutlinedInput defaultValue="June 11, 2024" label="Start Date" name="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>End Date</InputLabel>
-                <OutlinedInput defaultValue="August 29, 2024" label="End Date" name="endDate" />
+                <OutlinedInput defaultValue="August 29, 2024" label="End Date" name="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Instructor 1</InputLabel>
-                <OutlinedInput defaultValue="Jason Yapri" label="Instructor 1" name="instructor1" />
+                <OutlinedInput defaultValue="Jason Yapri" label="Instructor 1" name="instructor1" value={instructor1} onChange={(e) => setInstructor1(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Instructor 2</InputLabel>
-                <OutlinedInput defaultValue="Yevonnael Andrew" label="Instructor 2" name="instructor2" />
+                <OutlinedInput defaultValue="Yevonnael Andrew" label="Instructor 2" name="instructor2" value={instructor2} onChange={(e) => setInstructor2(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>External URL</InputLabel>
-                <OutlinedInput defaultValue="https://www.pelitabangsa.co.id/bootcamp" label="External URL" name="externalUrl" />
+                <OutlinedInput defaultValue="https://www.pelitabangsa.co.id/bootcamp" label="External URL" name="externalUrl" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12} marginTop={1}>
@@ -190,7 +201,7 @@ export function IssueCertificateForm(): React.JSX.Element {
             <Grid md={12} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Description</InputLabel>
-                <OutlinedInput defaultValue="This is to certify that this person has successfully completed a 3-month Blockchain Developer Bootcamp by Pelita Bangsa Academy." label="Description" name="description" multiline rows={4} />
+                <OutlinedInput defaultValue="This is to certify that this person has successfully completed a 3-month Blockchain Developer Bootcamp by Pelita Bangsa Academy." label="Description" name="description" multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
               </FormControl>
             </Grid>
           </Grid>
