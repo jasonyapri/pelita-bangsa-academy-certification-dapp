@@ -7,6 +7,8 @@ import { UserProvider } from '@/contexts/user-context';
 import { LocalizationProvider } from '@/components/core/localization-provider';
 import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
 import { ThirdwebProvider } from "thirdweb/react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const viewport = { width: 'device-width', initialScale: 1 } satisfies Viewport;
 
@@ -32,6 +34,7 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
           >
             <UserProvider>
               <ThemeProvider>{children}</ThemeProvider>
+              <ToastContainer />
             </UserProvider>
           </ThirdwebProvider>
         </LocalizationProvider>

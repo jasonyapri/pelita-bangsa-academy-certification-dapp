@@ -20,6 +20,7 @@ import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton } from "thirdweb/react"
 import { PBACERT } from "@/app/constants/contracts";
+import { toast } from 'react-toastify';
 
 const certificateCategories = [
   { value: 'Bootcamp', label: 'Bootcamp' },
@@ -82,13 +83,13 @@ export function IssueCertificateForm(): React.JSX.Element {
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Full name</InputLabel>
-                <OutlinedInput defaultValue="" label="Full name" name="fullName" />
+                <OutlinedInput defaultValue="Jason Yapri" label="Full name" name="fullName" />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Wallet address</InputLabel>
-                <OutlinedInput defaultValue="" label="Wallet address" name="walletAddress" />
+                <OutlinedInput defaultValue="0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7" label="Wallet address" name="walletAddress" />
               </FormControl>
             </Grid>
             <Grid md={6} xs={12}>
@@ -214,13 +215,22 @@ export function IssueCertificateForm(): React.JSX.Element {
               return tx
             }}
             onTransactionSent={(result) => {
-              console.log("Transaction submitted", result.transactionHash);
+              toast.info("Issuing certificate...");
             }}
             onTransactionConfirmed={(receipt) => {
               console.log("Transaction confirmed", receipt.transactionHash);
+              toast.success(
+                <div>
+                  Certificate issued. Tx Hash:{' '}
+                  <a href={`https://sepolia.basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
+                    {receipt.transactionHash}
+                  </a>
+                </div>
+              );
             }}
             onError={(error) => {
               console.error("Transaction error", error);
+              toast.error(error.message);
             }}
           >
             Issue Certificate
