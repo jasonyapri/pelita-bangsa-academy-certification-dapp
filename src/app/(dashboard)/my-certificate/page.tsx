@@ -82,7 +82,7 @@ export default function Page(): React.JSX.Element {
 
   const { data: rawCertificates, isLoading, error } = useReadContract(getOwnedNFTs, {
     contract: contract,
-    owner: '0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7' // activeAccount?.address || ''
+    owner: activeAccount?.address || ''
   });
 
   useEffect(() => {
@@ -118,7 +118,9 @@ export default function Page(): React.JSX.Element {
         </Stack>
       </Stack>
       {/* <CompaniesFilters /> */}
-      { isLoading ? (
+      { !activeAccount?.address ? (
+        <Alert severity="info">Please connect to your Web3 Wallet...</Alert>
+      ) : isLoading ? (
         <Alert severity="info">Fetching certificates...</Alert>
       ) : 
       error ? (
