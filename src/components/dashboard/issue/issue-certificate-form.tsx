@@ -97,7 +97,7 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [instructor1, setInstructor1] = useState("Jason Yapri");
   const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
   const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
-  const [description, setDescription] = useState("This is to certify that this person has successfully completed a 3-month Blockchain Developer Bootcamp by Pelita Bangsa Academy.");
+  const [description, setDescription] = useState("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
 
   const uploadFileToIpfs = async () => {
     if (!file) {

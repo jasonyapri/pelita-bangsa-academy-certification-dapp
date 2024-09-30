@@ -1,5 +1,7 @@
+'use client';
+
 import * as React from 'react';
-import type { Metadata } from 'next';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
@@ -11,14 +13,34 @@ import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
 import { Card, CardMedia } from '@mui/material';
+import { getOwnedNFTs } from "thirdweb/extensions/erc721";
+import { PBACERT } from "@/app/constants/contracts";
+import { useActiveAccount, MediaRenderer } from "thirdweb/react";
+import { upload, download, resolveScheme } from "thirdweb/storage";
+import { MyCertificateDetail } from '@/components/dashboard/my-certificate/my-certificate-detail';
+import { camelCase } from 'lodash';
 
 import { config } from '@/config';
 import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
 import type { Integration } from '@/components/dashboard/integrations/integrations-card';
 import { CompaniesFilters } from '@/components/dashboard/integrations/integrations-filters';
 import Alert from '@mui/material/Alert';
+import { useReadContract } from "thirdweb/react";
+import { getContract, prepareContractCall } from "thirdweb";
+import { base, baseSepolia } from "thirdweb/chains";
+import { client } from "@/app/client";
+import { Container } from '@mui/system';
 
-export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
+interface UseReadContractOptions {
+  contract: any;
+  owner: string;
+}
+
+type Attribute = {
+  trait_type: string;
+  value: string | number;
+  display_type?: string;
+};
 
 const integrations = [
   {
@@ -48,6 +70,46 @@ const integrations = [
 ] satisfies Integration[];
 
 export default function Page(): React.JSX.Element {
+
+  const activeAccount = useActiveAccount();
+  const [certificates, setCertificates] = useState<any[]>([]);
+
+  const contract = getContract({
+    client,
+    chain: baseSepolia,
+    address: PBACERT,
+  });
+
+  const { data: rawCertificates, isLoading, error } = useReadContract(getOwnedNFTs, {
+    contract: contract,
+    owner: '0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7' // activeAccount?.address || ''
+  });
+
+  useEffect(() => {
+    if (rawCertificates) {
+      const certMetadata: any[] = rawCertificates.map(cert => cert.metadata);
+
+      const processedCertificates: any[] = [];
+      certMetadata.forEach((certificate) => {
+        const resolvedImageURL = resolveScheme({
+          client,
+          uri: certificate.image || '',
+        });
+        certificate.image_url = resolvedImageURL;
+
+        const certAttributes: Attribute[] = certificate.attributes;
+
+        certAttributes.forEach((attribute) => {
+          const key = camelCase(attribute.trait_type);
+          certificate[key] = attribute.value;
+        });
+
+        processedCertificates.push(certificate);
+      });
+      setCertificates(processedCertificates);
+    }
+  }, [rawCertificates]);
+
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
@@ -56,22 +118,32 @@ export default function Page(): React.JSX.Element {
         </Stack>
       </Stack>
       {/* <CompaniesFilters /> */}
-      <Alert severity="error">You have no certificate</Alert>
-      <Grid container spacing={3}>
-        {integrations.map((integration) => (
-          <Grid key={integration.id} lg={4} md={6} xs={12}>
-            <CardMedia
-              component="img"
-              // image={`https://ipfs.io/ipfs/${certificate.ipfsHash}`}
-              image={`/assets/certificate/unic-certificate.jpg`}
-              alt="Certificate"
-            />
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      { isLoading ? (
+        <Alert severity="info">Fetching certificates...</Alert>
+      ) : 
+      error ? (
+        <Alert severity="error">Error fetching certificates</Alert>
+      ) :
+      certificates.length === 0 ? (
+        <Alert severity="error">You have no certificate</Alert>
+       ) : 
+      (
+        <Grid container spacing={3}>
+          {certificates.map((certificate, index) => (
+            <>
+              <Grid lg={4} md={6} xs={12}>
+                <MediaRenderer client={client} src={certificate.image} />
+              </Grid>
+              <Grid lg={8} md={6} xs={12}>
+                <MyCertificateDetail certificate={certificate} />
+              </Grid>
+            </>
+          ))}
+        </Grid>
+      )}
+      {/* <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Pagination count={3} size="small" />
-      </Box>
+      </Box> */}
     </Stack>
   );
 }

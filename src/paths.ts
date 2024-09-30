@@ -3,7 +3,7 @@ export const paths = {
   auth: { signIn: '/auth/sign-in', signUp: '/auth/sign-up', resetPassword: '/auth/reset-password' },
   dashboard: {
     validate: '/dashboard/validate',
-    claim: '/dashboard/claim',
+    // claim: '/dashboard/claim',
     myCertificate: '/dashboard/my-certificate',
     issue: '/dashboard/issue',
     batchIssue: '/dashboard/batch-issue',
