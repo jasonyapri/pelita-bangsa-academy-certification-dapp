@@ -17,13 +17,13 @@ import { getOwnedNFTs } from "thirdweb/extensions/erc721";
 import { PBACERT } from "@/app/constants/contracts";
 import { useActiveAccount, MediaRenderer } from "thirdweb/react";
 import { upload, download, resolveScheme } from "thirdweb/storage";
-import { MyCertificateDetail } from '@/components/dashboard/my-certificate/my-certificate-detail';
+import { MyCertificateDetail } from '@/components/my-certificate/my-certificate-detail';
 import { camelCase } from 'lodash';
 
 import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
-import type { Integration } from '@/components/dashboard/integrations/integrations-card';
-import { CompaniesFilters } from '@/components/dashboard/integrations/integrations-filters';
+import { IntegrationCard } from '@/components/integrations/integrations-card';
+import type { Integration } from '@/components/integrations/integrations-card';
+import { CompaniesFilters } from '@/components/integrations/integrations-filters';
 import Alert from '@mui/material/Alert';
 import { useReadContract } from "thirdweb/react";
 import { getContract, prepareContractCall } from "thirdweb";

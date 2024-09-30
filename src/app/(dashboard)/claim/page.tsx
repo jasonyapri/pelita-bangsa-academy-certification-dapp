@@ -5,8 +5,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 
 import { config } from '@/config';
-import { ClaimCertificateDetail } from '@/components/dashboard/claim/claim-certificate-detail';
-import { AccountInfo } from '@/components/dashboard/account/account-info';
+import { ClaimCertificateDetail } from '@/components/claim/claim-certificate-detail';
+import { AccountInfo } from '@/components/account/account-info';
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
 

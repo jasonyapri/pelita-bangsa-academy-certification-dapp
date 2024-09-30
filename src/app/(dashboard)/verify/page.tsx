@@ -12,9 +12,9 @@ import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/verify/verify-card';
-import type { Integration } from '@/components/dashboard/verify/verify-card';
-import { VerifyFilters } from '@/components/dashboard/verify/verify-filters';
+import { IntegrationCard } from '@/components/verify/verify-card';
+import type { Integration } from '@/components/verify/verify-card';
+import { VerifyFilters } from '@/components/verify/verify-filters';
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
