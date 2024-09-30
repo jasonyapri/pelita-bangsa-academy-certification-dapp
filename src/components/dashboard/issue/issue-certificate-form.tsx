@@ -21,7 +21,7 @@ import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
 import { PBACERT } from "@/app/constants/contracts";
 import { toast } from 'react-toastify';
-import { upload, download } from "thirdweb/storage";
+import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
 
 const certificateCategories = [
@@ -51,7 +51,7 @@ const VisuallyHiddenInput = styled('input')({
 export function IssueCertificateForm(): React.JSX.Element {
   const [file, setFile] = useState<File | null>(null);
   const [currentUri, setCurrentUri] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  // const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageWidth, setImageWidth] = useState<number | null>(null);
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
@@ -107,6 +107,7 @@ export function IssueCertificateForm(): React.JSX.Element {
     try {
       const uri = await upload({
         client,
+        uploadWithoutDirectory: true,
         files: [file],
       });
       // console.warn(uri);
@@ -250,9 +251,6 @@ export function IssueCertificateForm(): React.JSX.Element {
           <TransactionButton
             type="submit"
             transaction={async () => {
-              const dataHash = "0xdc10d28bd930d9a231dfce13798cb3c8a610c24ce69112195b25dfe442c339ce";
-              const fileHash = "0xfe301f3f0cab010a4a67d507e6c4ef874a2ebd21f5669684663d56136de08719";
-
               if (!file) {
                 // console.error("File is not uploaded yet.");
                 return Promise.reject(new Error("File is not uploaded yet!"));
@@ -265,81 +263,99 @@ export function IssueCertificateForm(): React.JSX.Element {
                 return Promise.reject(new Error("File should be an image!"));
               }
 
-              const imageUri = await uploadFileToIpfs();
+              const imageURI = await uploadFileToIpfs();
+              const resolvedImageURL = resolveScheme({
+                client,
+                uri: imageURI,
+              });
+              console.warn("imageUri", imageURI);
+              console.warn("imageURL", resolvedImageURL);
+
+              const tokenMetadata = {
+                "name": certificateName,
+                "created_by": issuer,
+                "external_url": externalUrl,
+                "description": description,
+                "attributes": [
+                  {
+                      "trait_type": "Issuer",
+                      "value": issuer
+                    },
+                  {
+                      "trait_type": "Category",
+                      "value": certificateCategory
+                    },
+                  {
+                      "trait_type": "Type",
+                      "value": certificateType
+                    },
+                  {
+                    "display_type": "number", 
+                      "trait_type": "Cohort",
+                      "value": cohort
+                    },
+                  {
+                      "trait_type": "Full Name",
+                      "value": fullName
+                    },
+                  {
+                      "trait_type": "Duration",
+                      "value": duration
+                    },
+                  {
+                      "trait_type": "Start Date",
+                      "value": startDate
+                    },
+                  {
+                      "trait_type": "End Date",
+                      "value": endDate
+                    },
+                  {
+                      "trait_type": "Instructor 1",
+                      "value": instructor1
+                    },
+                  {
+                      "trait_type": "Instructor 2",
+                      "value": instructor2
+                    },
+                  {
+                      "display_type": "date", 
+                      "trait_type": "Date Issued",
+                      "value": Date.now()
+                    },
+                ],
+                "image_details": {
+                  "bytes": fileSize,
+                  "format": fileType.split('/')[1].toUpperCase(),
+                  "keccak256": imageHash,
+                  "width": imageWidth,
+                  "height": imageHeight
+                },
+                "image": resolvedImageURL,
+                "image_url": resolvedImageURL
+              };
+              console.warn("tokenMetadata");
+              console.warn(tokenMetadata);
+              const dataHash = keccak256(JSON.stringify(tokenMetadata));
 
               const _tokenURI = await upload({
                   client,
-                  files: [
-                    {
-                      "name": certificateName,
-                      "created_by": issuer,
-                      "external_url": externalUrl,
-                      "description": description,
-                      "attributes": [
-                        {
-                            "trait_type": "Issuer",
-                            "value": issuer
-                          },
-                        {
-                            "trait_type": "Category",
-                            "value": certificateCategory
-                          },
-                        {
-                            "trait_type": "Type",
-                            "value": certificateType
-                          },
-                        {
-                          "display_type": "number", 
-                            "trait_type": "Cohort",
-                            "value": cohort
-                          },
-                        {
-                            "trait_type": "Full Name",
-                            "value": fullName
-                          },
-                        {
-                            "trait_type": "Duration",
-                            "value": duration
-                          },
-                        {
-                            "trait_type": "Start Date",
-                            "value": startDate
-                          },
-                        {
-                            "trait_type": "End Date",
-                            "value": endDate
-                          },
-                        {
-                            "trait_type": "Instructor 1",
-                            "value": instructor1
-                          },
-                        {
-                            "trait_type": "Instructor 2",
-                            "value": instructor2
-                          },
-                        {
-                            "display_type": "date", 
-                            "trait_type": "Date Issued",
-                            "value": Date.now()
-                          },
-                      ],
-                      "image_details": {
-                        "bytes": fileSize,
-                        "format": fileType.split('/')[1].toUpperCase(),
-                        "keccak256": imageHash,
-                        "width": imageWidth,
-                        "height": imageHeight
-                      },
-                      "image": imageUri,
-                      "image_url": imageUri
-                    },
-                  ],
+                  uploadWithoutDirectory: true,
+                  files: [tokenMetadata]
               });
+              
+              const tokenURL = resolveScheme({
+                client,
+                uri: _tokenURI,
+              });
+
+              console.warn("_tokenURI", _tokenURI);
+              console.warn("tokenURL", tokenURL);
 
               const tx = prepareContractCall({ 
                 contract, 
                 method: "function issueCertificate(address studentAddress, string _tokenURI, bytes32 dataHash, bytes32 fileHash)", 
-                params: [walletAddress, _tokenURI, dataHash, fileHash] 
+                params: [walletAddress, _tokenURI, `0x${dataHash}`, `0x${imageHash}`] 
               });
               return tx;
             }}
@@ -364,7 +380,7 @@ export function IssueCertificateForm(): React.JSX.Element {
           >
             Issue Certificate
           </TransactionButton>
-          <Button
+          {/* <Button
             onClick={() => {
               uploadFileToIpfs().then((uri) => {
                 // console.log(uri);
@@ -373,8 +389,8 @@ export function IssueCertificateForm(): React.JSX.Element {
                 toast.error("Upload error", error);
               });
             }}
-          >Upload to IPFS</Button>
-          <Button onClick={async () => {
+          >Upload to IPFS</Button> */}
+          {/* <Button onClick={async () => {
             const response = await download({
               client,
               uri: "ipfs://QmaWZwvhgU9yQokQ334eVJFy6615jqdSnSXzh7NAfm3egC/thumbnail.jpg",
@@ -383,9 +399,9 @@ export function IssueCertificateForm(): React.JSX.Element {
             setImageUrl(url);
           }}>
             Download URL
-          </Button>
+          </Button> */}
         </CardActions>
-        {imageUrl && (
+        {/* {imageUrl && (
           <CardContent>
             <img src={imageUrl} alt="Downloaded from IPFS" style={{ maxWidth: '100%', height: 'auto' }} />
           </CardContent>
@@ -394,7 +410,7 @@ export function IssueCertificateForm(): React.JSX.Element {
           <CardContent>
             <MediaRenderer client={client} src={currentUri} />
           </CardContent>
-        )}
+        )} */}
       </Card>
     </form>
   );
