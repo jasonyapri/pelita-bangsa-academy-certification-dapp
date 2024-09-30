@@ -12,9 +12,9 @@ import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/validate/validate-card';
-import type { Integration } from '@/components/dashboard/validate/validate-card';
-import { ValidateFilters } from '@/components/dashboard/validate/validate-filters';
+import { IntegrationCard } from '@/components/dashboard/verify/verify-card';
+import type { Integration } from '@/components/dashboard/verify/verify-card';
+import { VerifyFilters } from '@/components/dashboard/verify/verify-filters';
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
@@ -25,7 +25,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Validate</Typography>
+          <Typography variant="h4">Verify</Typography>
           {/* <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
             <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
               Import
@@ -41,7 +41,7 @@ export default function Page(): React.JSX.Element {
           </Button>
         </div> */}
       </Stack>
-      <ValidateFilters />
+      <VerifyFilters />
       <Grid container spacing={3}>
         <Grid lg={12} md={12} xs={12}>
           <Alert severity="error" sx={{ marginBottom: 2 }}>Certificate not found</Alert>

@@ -2,7 +2,7 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 
 export const navItems = [
-  { key: 'validate', title: 'Validate', href: paths.dashboard.validate, icon: 'file-magnifying-glass' },
+  { key: 'verify', title: 'Verify', href: paths.dashboard.verify, icon: 'file-magnifying-glass' },
   // { key: 'claim', title: 'Claim', href: paths.dashboard.claim, icon: 'hand-withdraw' },
   { key: 'myCertificate', title: 'My Certificate', href: paths.dashboard.myCertificate, icon: 'certificate' },
   { key: 'issue', title: 'Issue', href: paths.dashboard.issue, icon: 'signature' },

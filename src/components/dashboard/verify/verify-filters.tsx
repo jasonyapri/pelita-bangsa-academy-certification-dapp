@@ -8,7 +8,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 
-export function ValidateFilters(): React.JSX.Element {
+export function VerifyFilters(): React.JSX.Element {
   return (
     <Card sx={{ p: 2 }}>
       <ButtonGroup variant="outlined" aria-label="Basic button group">
