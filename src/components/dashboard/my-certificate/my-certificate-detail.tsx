@@ -32,9 +32,6 @@ const states = [
 
 export function MyCertificateDetail(certificate: any): React.JSX.Element {
 
-  console.log("My Certificate Detail");
-  console.log(certificate);
-
   return (
     <form
       onSubmit={(event) => {
@@ -51,6 +48,14 @@ export function MyCertificateDetail(certificate: any): React.JSX.Element {
               <TableRow hover>
                 <TableCell colSpan={2} >
                   {certificate.certificate.description}
+                </TableCell>
+              </TableRow>
+              <TableRow hover>
+                <TableCell variant='head'>
+                Certificate ID
+                </TableCell>
+                <TableCell>
+                  {certificate.certificate.certificateId}
                 </TableCell>
               </TableRow>
               <TableRow hover>

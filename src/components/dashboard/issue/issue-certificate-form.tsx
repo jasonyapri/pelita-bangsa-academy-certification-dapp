@@ -97,7 +97,15 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [instructor1, setInstructor1] = useState("Jason Yapri");
   const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
   const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
+  const [certificateId, setCertificateId] = useState("0000000000");
+  const [certificateIdNumber, setCertificateIdNumber] = useState<bigint>(BigInt(0));
   const [description, setDescription] = useState("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
+
+  const { data: certificateIdExists, isLoading, refetch, error } = useReadContract({
+    contract,
+    method: "function certificateIds(uint256) view returns (bool)",
+    params: [BigInt(certificateIdNumber)]
+  });
 
   const uploadFileToIpfs = async () => {
     if (!file) {
@@ -117,6 +125,51 @@ export function IssueCertificateForm(): React.JSX.Element {
       throw error;
     }
   };
+
+  const convertToHex = (id: Number) => {
+    return id.toString(16).padStart(10, '0').toUpperCase();
+  };
+
+  const generateRandomCertificateId = async (): Promise<number> => {
+    let found: boolean = false;
+    let randomIdNumber = Math.floor(Math.random() * 1099511627776);
+    while (!found) {
+      Math.floor(Math.random() * 1099511627776);
+      // console.log("certificateIdExists: ", certificateIdExists);
+      const result = await refetch();
+      // if (result !== undefined) {
+        // console.info("Result");
+        // console.info(result);
+      // } else {
+      //   console.error("Refetch did not return data");
+      // }
+      // console.log("certificateIdExists: ", certificateIdExists);
+      if (certificateIdExists) {
+        // console.log("exists, so regenerating...");
+        continue;
+      } else{
+        // console.log("doesn't exists, so stop generating...");
+        found = true;
+        return randomIdNumber;
+      }
+    }
+
+    return 0;
+  };
+
+  useEffect(() => {
+    generateRandomCertificateId().then((id) => {
+      setCertificateIdNumber(BigInt(id));
+      setCertificateId(convertToHex(id));
+    });
+  }, []);
+
+  // const testFunction = async () => {
+  //   console.log("refetching...");
+  //   setCertificateIdNumber(BigInt(Math.floor(Math.random() * 1099511627776)));
+  //   await refetch();
+  //   console.log("refetch done!");
+  // }
 
   return (
     <form
@@ -219,7 +272,23 @@ export function IssueCertificateForm(): React.JSX.Element {
                 <OutlinedInput label="External URL" name="externalUrl" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12} marginTop={1}>
+            <Grid md={6} xs={12}>
+              <FormControl fullWidth required>
+                <InputLabel>Certificate ID</InputLabel>
+                <OutlinedInput label="Certificate ID" name="certificateId" value={certificateId} disabled={true} />
+                {isLoading ? "Checking ID availability..." : ""}
+                {/* <div>{certificateIdExists == undefined ? "undefined" : (certificateIdExists == true ? 'true' : 'false')}</div>
+                <div>Error: {JSON.stringify(error)}</div>
+                <Button onClick={testFunction}>Refetch</Button> */}
+              </FormControl>
+            </Grid>
+            <Grid md={12} xs={12}>
+              <FormControl fullWidth required>
+                <InputLabel>Description</InputLabel>
+                <OutlinedInput label="Description" name="description" multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
+              </FormControl>
+            </Grid>
+            <Grid md={12} xs={12}>
               <Button
                 component="label"
                 role={undefined}
@@ -235,12 +304,6 @@ export function IssueCertificateForm(): React.JSX.Element {
                   // multiple
                 />
               </Button> &nbsp;{file && `Selected file: ${file.name}`}
-            </Grid>
-            <Grid md={12} xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Description</InputLabel>
-                <OutlinedInput label="Description" name="description" multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
-              </FormControl>
             </Grid>
           </Grid>
           
@@ -268,8 +331,8 @@ export function IssueCertificateForm(): React.JSX.Element {
                 client,
                 uri: imageURI,
               });
-              console.warn("imageUri", imageURI);
-              console.warn("imageURL", resolvedImageURL);
+              // console.warn("imageUri", imageURI);
+              // console.warn("imageURL", resolvedImageURL);
 
               const tokenMetadata = {
                 "name": certificateName,
@@ -278,9 +341,13 @@ export function IssueCertificateForm(): React.JSX.Element {
                 "description": description,
                 "attributes": [
                   {
+                      "trait_type": "Certificate ID",
+                      "value": certificateId
+                  },
+                  {
                       "trait_type": "Issuer",
                       "value": issuer
-                    },
+                  },
                   {
                       "trait_type": "Category",
                       "value": certificateCategory
@@ -288,41 +355,41 @@ export function IssueCertificateForm(): React.JSX.Element {
                   {
                       "trait_type": "Type",
                       "value": certificateType
-                    },
+                  },
                   {
                     "display_type": "number", 
                       "trait_type": "Cohort",
                       "value": cohort
-                    },
+                  },
                   {
                       "trait_type": "Full Name",
                       "value": fullName
-                    },
+                  },
                   {
                       "trait_type": "Duration",
                       "value": duration
-                    },
+                  },
                   {
                       "trait_type": "Start Date",
                       "value": startDate
-                    },
+                  },
                   {
                       "trait_type": "End Date",
                       "value": endDate
-                    },
+                  },
                   {
                       "trait_type": "Instructor 1",
                       "value": instructor1
-                    },
+                  },
                   {
                       "trait_type": "Instructor 2",
                       "value": instructor2
-                    },
+                  },
                   {
                       "display_type": "date", 
                       "trait_type": "Date Issued",
                       "value": Date.now()
-                    },
+                  },
                 ],
                 "image_details": {
                   "bytes": fileSize,
@@ -334,8 +401,8 @@ export function IssueCertificateForm(): React.JSX.Element {
                 "image": resolvedImageURL,
                 "image_url": resolvedImageURL
               };
-              console.warn("tokenMetadata");
-              console.warn(tokenMetadata);
+              // console.warn("tokenMetadata");
+              // console.warn(tokenMetadata);
               const dataHash = keccak256(JSON.stringify(tokenMetadata));
 
               const _tokenURI = await upload({
@@ -349,13 +416,13 @@ export function IssueCertificateForm(): React.JSX.Element {
                 uri: _tokenURI,
               });
 
-              console.warn("_tokenURI", _tokenURI);
-              console.warn("tokenURL", tokenURL);
+              // console.warn("_tokenURI", _tokenURI);
+              // console.warn("tokenURL", tokenURL);
 
               const tx = prepareContractCall({ 
                 contract, 
-                method: "function issueCertificate(address studentAddress, string _tokenURI, bytes32 dataHash, bytes32 fileHash)", 
-                params: [walletAddress, _tokenURI, `0x${dataHash}`, `0x${imageHash}`] 
+                method: "function issueCertificate(address studentAddress, string _tokenURI, uint256 _certificateId, bytes32 dataHash, bytes32 fileHash)", 
+                params: [walletAddress, _tokenURI, BigInt(0), `0x${dataHash}`, `0x${imageHash}`] 
               });
               return tx;
             }}
@@ -377,6 +444,7 @@ export function IssueCertificateForm(): React.JSX.Element {
               // console.error("Transaction error", error);
               toast.error(error.message);
             }}
+            disabled={isLoading || certificateIdExists}
           >
             Issue Certificate
           </TransactionButton>
