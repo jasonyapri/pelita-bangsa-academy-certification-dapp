@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
@@ -10,17 +12,26 @@ import { Download as DownloadIcon } from '@phosphor-icons/react/dist/ssr/Downloa
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
+import { useState } from 'react';
+import InputAdornment from '@mui/material/InputAdornment';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import { config } from '@/config';
 import { IntegrationCard } from '@/components/verify/verify-card';
 import type { Integration } from '@/components/verify/verify-card';
-import { VerifyFilters } from '@/components/verify/verify-filters';
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
-export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
-
 export default function Page(): React.JSX.Element {
+  const [certificateId, setCertificateId] = useState('');
+
+  const searchCertificateById = async (certificateId: string) => {
+    console.log(certificateId);
+  };
+
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
@@ -41,7 +52,23 @@ export default function Page(): React.JSX.Element {
           </Button>
         </div> */}
       </Stack>
-      <VerifyFilters />
+      <Card sx={{ p: 2 }}>
+        <ButtonGroup variant="outlined" aria-label="Basic button group">
+          <OutlinedInput
+            value={certificateId}
+            onChange={e => setCertificateId(e.target.value)}
+            placeholder="Search Certificate by ID"
+            startAdornment={
+              <InputAdornment position="start">
+                <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
+              </InputAdornment>
+            }
+          />
+          <LoadingButton sx={{ p: 2 }} loading={false} loadingPosition="start" variant="contained" startIcon={(<MagnifyingGlassIcon />)} onClick={() => {searchCertificateById(certificateId)}}>
+            Search
+          </LoadingButton>
+        </ButtonGroup>
+      </Card>
       <Grid container spacing={3}>
         <Grid lg={12} md={12} xs={12}>
           <Alert severity="error" sx={{ marginBottom: 2 }}>Certificate not found</Alert>

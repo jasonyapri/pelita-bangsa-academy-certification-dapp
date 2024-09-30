@@ -157,11 +157,16 @@ export function IssueCertificateForm(): React.JSX.Element {
     return 0;
   };
 
-  useEffect(() => {
+  const refreshRandomCertificateId = () => {
     generateRandomCertificateId().then((id) => {
       setCertificateIdNumber(BigInt(id));
       setCertificateId(convertToHex(id));
     });
+  };
+
+
+  useEffect(() => {
+    refreshRandomCertificateId();
   }, []);
 
   // const testFunction = async () => {
@@ -422,11 +427,12 @@ export function IssueCertificateForm(): React.JSX.Element {
               const tx = prepareContractCall({ 
                 contract, 
                 method: "function issueCertificate(address studentAddress, string _tokenURI, uint256 _certificateId, bytes32 dataHash, bytes32 fileHash)", 
-                params: [walletAddress, _tokenURI, BigInt(0), `0x${dataHash}`, `0x${imageHash}`] 
+                params: [walletAddress, _tokenURI, BigInt(certificateIdNumber), `0x${dataHash}`, `0x${imageHash}`] 
               });
               return tx;
             }}
             onTransactionSent={(result) => {
+              refreshRandomCertificateId();
               toast.info("Issuing certificate...");
             }}
             onTransactionConfirmed={(receipt) => {
