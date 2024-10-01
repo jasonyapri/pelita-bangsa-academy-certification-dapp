@@ -73,6 +73,7 @@ export default function Page(): React.JSX.Element {
 
   const activeAccount = useActiveAccount();
   const [certificates, setCertificates] = useState<any[]>([]);
+  const [tokenId, setTokenId] = useState(null);
 
   const contract = getContract({
     client,

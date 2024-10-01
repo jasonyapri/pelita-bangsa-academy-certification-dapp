@@ -35,11 +35,11 @@ export function MainNav(): React.JSX.Element {
     address: COUNTER,
   });
 
-  const { data, isLoading } = useReadContract({ 
-    contract, 
-    method: "function counter() view returns (uint256)", 
-    params: [] 
-  });
+  // const { data, isLoading } = useReadContract({ 
+  //   contract, 
+  //   method: "function counter() view returns (uint256)", 
+  //   params: [] 
+  // });
 
   const { mutate: sendTransaction } = useSendTransaction();
 
@@ -52,9 +52,9 @@ export function MainNav(): React.JSX.Element {
     sendTransaction(transaction);
   }
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+  // useEffect(() => {
+  //   console.log(data);
+  // }, [data]);
 
   return (
     <React.Fragment>

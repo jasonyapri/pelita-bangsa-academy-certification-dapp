@@ -136,7 +136,7 @@ export function IssueCertificateForm(): React.JSX.Element {
     while (!found) {
       Math.floor(Math.random() * 1099511627776);
       // console.log("certificateIdExists: ", certificateIdExists);
-      const result = await refetch();
+      const result = await 5678();
       // if (result !== undefined) {
         // console.info("Result");
         // console.info(result);
