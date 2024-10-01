@@ -29,6 +29,7 @@ import Alert from '@mui/material/Alert';
 import { PBACERT } from "@/app/constants/contracts";
 import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
+import { useParams } from 'next/navigation'
 
 type Attribute = {
   trait_type: string;
@@ -36,7 +37,13 @@ type Attribute = {
   display_type?: string;
 };
 
+type ParamsType = {
+  id?: string[];
+};
+
 export default function Page(): React.JSX.Element {
+
+  const params = useParams<ParamsType>()
 
   const [certificateId, setCertificateId] = useState('');
   const [lastTriggeredCertificateId, setLastTriggeredCertificateId] = useState('ZZZ'); // value that is impossible to input manually
@@ -47,6 +54,8 @@ export default function Page(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
 
   let [certificateIdNumberParam, setCertificateIdNumberParam] = useState(BigInt(-1));
+
+  const [initialVerifyTriggered, setInitialVerifyTriggered] = useState(false);
 
   useEffect(() => {
     if (certificateId == undefined || certificateId == "") {
@@ -139,6 +148,7 @@ export default function Page(): React.JSX.Element {
       // console.log("It exists");
       setGetCertificateTokenIdParam(certificateIdNumberParam);
     } else{
+      // console.log("It doesn't exists");
       setGetCertificateTokenIdParam(DEFAULT_TOKEN_ID);
       setIsLoading(false);
       setCertificate(null);
@@ -173,6 +183,16 @@ export default function Page(): React.JSX.Element {
     const hexValue = value.replace(/[^0-9a-fA-F]/g, '').toUpperCase(); // Filter out non-hexadecimal characters
     setCertificateId(hexValue);
   };
+
+  useEffect(() => {
+    if (client) {
+      // console.log(client);
+      // console.log(params);
+      if (params.id && params.id.length > 0) {
+        setCertificateId(params.id[0].replace(/[^0-9a-fA-F]/g, '').toUpperCase());
+      }
+    }
+  }, [client]);
 
   return (
     <Stack spacing={3}>
