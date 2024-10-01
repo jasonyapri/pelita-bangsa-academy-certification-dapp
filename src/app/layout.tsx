@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { Viewport } from 'next';
+import type { Metadata } from 'next';
 
 import '@/styles/global.css';
 
@@ -9,6 +10,7 @@ import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
 import { ThirdwebProvider } from "thirdweb/react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { config } from '@/config';
 
 export const viewport = { width: 'device-width', initialScale: 1 } satisfies Viewport;
 
@@ -17,6 +19,8 @@ interface LayoutProps {
 }
 
 const activeChain = "baseSepolia"
+
+export const metadata = { title: `${config.site.name}` } satisfies Metadata;
 
 export default function Layout({ children }: LayoutProps): React.JSX.Element {
 

@@ -29,6 +29,7 @@ import Alert from '@mui/material/Alert';
 import { PBACERT } from "@/app/constants/contracts";
 import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
+import { config } from '@/config';
 
 type Attribute = {
   trait_type: string;
