@@ -32,6 +32,8 @@ import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
 import Modal from '@mui/material/Modal';
 import { toast } from 'react-toastify';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
 type Attribute = {
   trait_type: string;
@@ -52,28 +54,22 @@ const style = {
 };
 
 export default function Page(): React.JSX.Element {
-
-  const [tokenId, setTokenId] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const decimalValue = value.replace(/[^0-9]/g, ''); // Filter out non-hexadecimal characters
-    setTokenId(decimalValue);
-  };
-
   const contract = getContract({
     client,
-    chain: baseSepolia,
+  chain: baseSepolia,
     address: PBACERT,
   });
 
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
-    if (tokenId != "") setOpen(true);
+    if (value.length > 0) setOpen(true);
   };
   const handleClose = () => setOpen(false);
+
+  const [value, setValue] = useState<string[]>([]);
 
   return (
     <Stack spacing={3}>
@@ -97,7 +93,7 @@ export default function Page(): React.JSX.Element {
       </Stack>
       <Card sx={{ p: 2 }}>
         <ButtonGroup variant="outlined" aria-label="Basic button group">
-          <OutlinedInput
+          {/* <OutlinedInput
             value={tokenId}
             onChange={handleInputChange}
             placeholder="Token ID"
@@ -106,8 +102,27 @@ export default function Page(): React.JSX.Element {
                 <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
               </InputAdornment>
             }
+          /> */}
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            style={{ width: 500 }}
+            value={value}
+            onChange={(event, newValue) => {
+              const cleanedValue = newValue.map((item) => item.toString().replace(/[^0-9]/g, '')).filter(item => item !== '');;
+              setValue(cleanedValue);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Enter Token IDs"
+                placeholder="Type and press Enter"
+              />
+            )}
           />
-          <LoadingButton sx={{ p: 2 }} loading={isLoading} color='error' loadingPosition="start" variant="contained" startIcon={(<FireIcon />)} onClick={handleOpen} disabled={tokenId == ""}>
+          <LoadingButton sx={{ p: 2 }} loading={isLoading} color='error' loadingPosition="start" variant="contained" startIcon={(<FireIcon />)} onClick={handleOpen} disabled={value.length == 0}>
             Batch Destroy
           </LoadingButton>
         </ButtonGroup>
@@ -133,7 +148,7 @@ export default function Page(): React.JSX.Element {
             Certificate Destroy Confirmation
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Are you sure you want to destroy this certificate with Token ID of {tokenId}?
+            Are you sure you want to destroy this certificate with Token ID of {value.join(', ')}?
           </Typography>
           <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
             <TransactionButton
@@ -141,10 +156,12 @@ export default function Page(): React.JSX.Element {
               transaction={async () => {
                 setIsLoading(true);
 
+                const param = value.map((item) => BigInt(item));
+
                 const tx = prepareContractCall({ 
                   contract, 
-                  method: "function destroyCertificate(uint256 tokenId)", 
-                  params: [BigInt(tokenId)] 
+                  method: "function batchDestroyCertificate(uint256[] tokenIds)", 
+                  params: [param] 
                 });
                 return tx;
               }}
@@ -152,7 +169,7 @@ export default function Page(): React.JSX.Element {
                 handleClose();
                 toast.info("Destroying certificate...");
                 setIsLoading(false);
-                setTokenId("");
+                setValue([]);
               }}
               onTransactionConfirmed={(receipt) => {
                 // console.log("Transaction confirmed", receipt.transactionHash);
@@ -170,7 +187,7 @@ export default function Page(): React.JSX.Element {
                 toast.error(error.message);
                 handleClose();
                 setIsLoading(false);
-                setTokenId("");
+                setValue([]);
               }}
               disabled={false}
             >
