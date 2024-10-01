@@ -6,10 +6,7 @@ export const paths = {
   myCertificate: '/my-certificate',
   issue: '/issue',
   batchIssue: '/batch-issue',
-  // overview: '/dashboard',
-  // account: '/dashboard/account',
-  // customers: '/dashboard/customers',
-  // integrations: '/dashboard/integrations',
-  // settings: '/dashboard/settings',
+  destroy: '/destroy',
+  batchDestroy: '/batch-destroy',
   errors: { notFound: '/errors/not-found' },
 } as const;

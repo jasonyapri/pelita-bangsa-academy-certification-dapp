@@ -10,6 +10,7 @@ import { FileMagnifyingGlass as FileMagnifyingGlassIcon } from '@phosphor-icons/
 import { HandWithdraw as HandWithdrawIcon } from '@phosphor-icons/react/dist/ssr/HandWithdraw';
 import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
 import { Signature as SignatureIcon } from '@phosphor-icons/react/dist/ssr/Signature';
+import { Fire as FireIcon } from '@phosphor-icons/react/dist/ssr/Fire';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { CloudArrowUp as CloudArrowUpIcon } from '@phosphor-icons/react/dist/ssr/CloudArrowUp';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
@@ -24,6 +25,7 @@ export const navIcons = {
   'hand-withdraw': HandWithdrawIcon,
   'certificate': CertificateIcon,
   'signature': SignatureIcon,
+  'fire': FireIcon,
   'magnifying-glass': MagnifyingGlassIcon,
   'cloud-arrow-up': CloudArrowUpIcon,
   'file-arrow-up': FileArrowUpIcon,

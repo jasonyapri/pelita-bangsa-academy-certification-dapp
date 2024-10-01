@@ -7,4 +7,6 @@ export const navItems = [
   { key: 'myCertificate', title: 'My Certificate', href: paths.myCertificate, icon: 'certificate' },
   { key: 'issue', title: 'Issue', href: paths.issue, icon: 'signature' },
   { key: 'batchIssue', title: 'Batch Issue', href: paths.batchIssue, icon: 'signature' },
+  { key: 'destroy', title: 'Destroy', href: paths.destroy, icon: 'fire' },
+  { key: 'batchDestroy', title: 'Batch Destroy', href: paths.batchDestroy, icon: 'fire' },
 ] satisfies NavItemConfig[];
