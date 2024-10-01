@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import RouterLink from 'next/link';
 import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
@@ -10,6 +11,12 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { ArrowSquareUpRight as ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
 import { CaretUpDown as CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
+import { useActiveAccount } from "thirdweb/react";
+import { base, baseSepolia } from "thirdweb/chains";
+import { client } from "@/app/client";
+import { useReadContract } from "thirdweb/react";
+import { getContract, prepareContractCall } from "thirdweb";
+import { PBACERT } from "@/app/constants/contracts";
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -21,6 +28,44 @@ import { navIcons } from './nav-icons';
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
+
+  const activeAccount = useActiveAccount();
+  const [filteredNavItems, setFilteredNavItems] = useState<NavItemConfig[]>([]);
+
+  useEffect(() => {
+    const filteredItems = navItems.filter(item => !item.admin);
+    setFilteredNavItems(filteredItems);
+  }, []);
+
+  const contract = getContract({
+    client,
+    chain: baseSepolia,
+    address: PBACERT,
+  });
+
+  const { data: isAdmin, isPending, refetch } = useReadContract({
+    contract,
+    method: "function administrators(address) view returns (bool)",
+    params: [activeAccount?.address || '']
+  });
+
+  useEffect(() => {
+    if (isAdmin !== undefined) {
+      let filteredItems: NavItemConfig[] = [];
+      if (isAdmin) {
+        filteredItems = navItems;
+      } else{
+        filteredItems = navItems.filter(item => !item.admin);
+      }
+      setFilteredNavItems(filteredItems);
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (activeAccount?.address) {
+      refetch();
+    }
+  }, [activeAccount]);
 
   return (
     <Box
@@ -57,7 +102,7 @@ export function SideNav(): React.JSX.Element {
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
-        {renderNavItems({ pathname, items: navItems })}
+        {renderNavItems({ pathname, items: filteredNavItems })}
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
     </Box>
