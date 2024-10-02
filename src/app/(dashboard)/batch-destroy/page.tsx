@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
@@ -59,7 +58,7 @@ export default function Page(): React.JSX.Element {
 
   const contract = getContract({
     client,
-  chain: baseSepolia,
+    chain: baseSepolia,
     address: PBACERT,
   });
 
@@ -75,7 +74,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Batch Destroy</Typography>
+          <Typography variant="h4">Batch Destroy Certificate</Typography>
           {/* <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
             <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
               Import

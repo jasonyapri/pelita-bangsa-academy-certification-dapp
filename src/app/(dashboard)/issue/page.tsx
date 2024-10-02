@@ -7,13 +7,13 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { config } from '@/config';
 import { IssueCertificateForm } from '@/components/issue/issue-certificate-form';
 
-export const metadata = { title: `Account | Dashboard | ${config.site.name}` } satisfies Metadata;
+// export const metadata = { title: `Issue Certificate | ${config.site.name}` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
   return (
     <Stack spacing={3}>
       <div>
-        <Typography variant="h4">Issue</Typography>
+        <Typography variant="h4">Issue Certificate</Typography>
       </div>
       <Grid container spacing={3}>
         <Grid lg={12} md={12} xs={12}>

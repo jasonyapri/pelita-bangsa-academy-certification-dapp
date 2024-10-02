@@ -10,9 +10,11 @@ import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import Grid from '@mui/material/Unstable_Grid2';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
 import { client } from "@/app/client";
@@ -20,6 +22,7 @@ import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
 import { PBACERT } from "@/app/constants/contracts";
+import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
@@ -48,7 +51,7 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-export function IssueCertificateForm(): React.JSX.Element {
+export function BatchIssueCertificateForm(): React.JSX.Element {
   const [file, setFile] = useState<File | null>(null);
   const [currentUri, setCurrentUri] = useState<string | null>(null);
   // const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -84,6 +87,28 @@ export function IssueCertificateForm(): React.JSX.Element {
     address: PBACERT,
   });
 
+  const DEFAULT_ROW_OBJECT = { fullName: '', walletAddress: '', certificateId: '', certificateIdNumber: BigInt(0), fileHash: '', dataHash: '' };
+
+  const [rows, setRows] = useState([
+    DEFAULT_ROW_OBJECT
+  ]);
+
+  const handleAddRow = () => {
+    setRows([...rows, DEFAULT_ROW_OBJECT]);
+  };
+
+  const handleRemoveRow = (index: Number) => {
+    const updatedRows = rows.filter((row, i) => i !== index);
+    setRows(updatedRows);
+  };
+
+  const handleInputChange = (index: Number, field: string, value: string | BigInt) => {
+    const updatedRows = rows.map((row, i) =>
+      i === index ? { ...row, [field]: value } : row
+    );
+    setRows(updatedRows);
+  };
+
   const [fullName, setFullName] = useState("Jason Yapri");
   const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
   const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
@@ -103,12 +128,11 @@ export function IssueCertificateForm(): React.JSX.Element {
 
   const certificateIdNumberTemp = useRef(BigInt(0));
 
-  const { data: certificateIdExists, isLoading, isPending, refetch, error } = useReadContract({
+  const { data: certificateIdExists, isLoading, refetch, error } = useReadContract({
     contract,
     method: "function certificateIds(uint256) view returns (bool)",
     params: [certificateIdNumberTemp.current]
   });
-  
 
   const uploadFileToIpfs = async () => {
     if (!file) {
@@ -139,12 +163,15 @@ export function IssueCertificateForm(): React.JSX.Element {
     while (!found) {
       randomIdNumber = Math.floor(Math.random() * 1099511627776);
       certificateIdNumberTemp.current = BigInt(randomIdNumber);
-      // console.log("refetching with " + certificateIdNumberTemp.current);
-      // console.log("isPending " + isPending);
       // console.log("certificateIdExists: ", certificateIdExists);
       const result = await refetch();
-      // console.log("isPending " + isPending);
-      // console.log("done refetching!");
+      // if (result !== undefined) {
+        // console.info("Result");
+        // console.info(result);
+      // } else {
+      //   console.error("Refetch did not return data");
+      // }
+      // console.log("certificateIdExists: ", certificateIdExists);
       if (certificateIdExists) {
         // console.log("exists, so regenerating...");
         continue;
@@ -160,8 +187,10 @@ export function IssueCertificateForm(): React.JSX.Element {
 
   const refreshRandomCertificateId = () => {
     generateRandomCertificateId().then((id) => {
-      setCertificateIdNumber(BigInt(id));
-      setCertificateId(convertToHex(id));
+      // setCertificateIdNumber(BigInt(id));
+      // setCertificateId(convertToHex(id));
+      handleInputChange(0, 'setCertificateIdNumber', BigInt(id));
+      handleInputChange(0, 'certificateId', convertToHex(id));
     });
   };
 
@@ -188,18 +217,6 @@ export function IssueCertificateForm(): React.JSX.Element {
         {/* <Divider /> */}
         <CardContent>
           <Grid container spacing={3}>
-            <Grid md={6} xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Full name</InputLabel>
-                <OutlinedInput label="Full name" name="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              </FormControl>
-            </Grid>
-            <Grid md={6} xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Wallet address</InputLabel>
-                <OutlinedInput label="Wallet address" name="walletAddress"  value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} />
-              </FormControl>
-            </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Certificate Name</InputLabel>
@@ -278,23 +295,7 @@ export function IssueCertificateForm(): React.JSX.Element {
                 <OutlinedInput label="External URL" name="externalUrl" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Certificate ID</InputLabel>
-                <OutlinedInput label="Certificate ID" name="certificateId" value={certificateId} disabled={true} />
-                {isLoading ? "Generating Certificate ID..." : ""}
-                {/* <div>{certificateIdExists == undefined ? "undefined" : (certificateIdExists == true ? 'true' : 'false')}</div>
-                <div>Error: {JSON.stringify(error)}</div>
-                <Button onClick={testFunction}>Refetch</Button> */}
-              </FormControl>
-            </Grid>
-            <Grid md={12} xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Description</InputLabel>
-                <OutlinedInput label="Description" name="description" multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
-              </FormControl>
-            </Grid>
-            <Grid md={12} xs={12}>
+            <Grid md={6} xs={12} marginTop={1}>
               <Button
                 component="label"
                 role={undefined}
@@ -310,10 +311,51 @@ export function IssueCertificateForm(): React.JSX.Element {
                   // multiple
                 />
               </Button> &nbsp;{file && `Selected file: ${file.name}`}
-              {/* {isPending ? "isPending"  : "not pending"} */}
+            </Grid>
+            <Grid md={12} xs={12}>
+              <FormControl fullWidth required>
+                <InputLabel>Description</InputLabel>
+                <OutlinedInput label="Description" name="description" multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
+              </FormControl>
+            </Grid>
+            { rows.map((row, index) => (
+              <>
+                <Grid md={4} xs={12}>
+                  <ButtonGroup variant="outlined" aria-label="Basic button group">
+                    <Button disabled={true}>{ index+1 }</Button>
+                    <FormControl fullWidth required>
+                      <InputLabel>Full name</InputLabel>
+                      <OutlinedInput label="Full name" name="fullName" value={row.fullName} onChange={(e) => handleInputChange(index, 'fullName', e.target.value)} />
+                    </FormControl>
+                  </ButtonGroup>
+                </Grid>
+                <Grid md={4} xs={12}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Wallet address</InputLabel>
+                    <OutlinedInput label="Wallet address" name="walletAddress"  value={row.walletAddress} onChange={(e) => handleInputChange(index, 'walletAddress', e.target.value)} />
+                  </FormControl>
+                </Grid>
+                <Grid md={4} xs={12}>
+                  <ButtonGroup variant="outlined" aria-label="Basic button group">
+                    <FormControl fullWidth required>
+                      <InputLabel>Certificate ID</InputLabel>
+                      <OutlinedInput label="Certificate ID" name="certificateId" value={row.certificateId} disabled={true} />
+                      {/* <div>{certificateIdExists == undefined ? "undefined" : (certificateIdExists == true ? 'true' : 'false')}</div>
+                      <div>Error: {JSON.stringify(error)}</div>
+                      <Button onClick={testFunction}>Refetch</Button> */}
+                    </FormControl>
+                    <LoadingButton sx={{ p: 2 }} color='error' loadingPosition="start" variant="contained" onClick={() => { if (rows.length > 1) handleRemoveRow(index) }} disabled={rows.length <= 1}>
+                      <TrashIcon />
+                    </LoadingButton>
+                  </ButtonGroup>
+                  {isLoading ? "Generating Certificate ID..." : ""}
+                </Grid>
+              </>
+            ))}
+            <Grid md={12} xs={12}>
+              <Button variant="contained" onClick={() => handleAddRow()}>Add Recipient</Button>
             </Grid>
           </Grid>
-          
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
