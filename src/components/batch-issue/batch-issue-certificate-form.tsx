@@ -94,19 +94,30 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   ]);
 
   const handleAddRow = () => {
-    setRows([...rows, DEFAULT_ROW_OBJECT]);
+    generateRandomCertificateId().then((id) => {
+      let tempRow = { fullName: '', walletAddress: '', certificateId: convertToHex(id), certificateIdNumber: BigInt(id), fileHash: '', dataHash: '' };
+      setRows([...rows, tempRow]);
+      // console.log("--- handleAddRow");
+    });
   };
 
   const handleRemoveRow = (index: Number) => {
     const updatedRows = rows.filter((row, i) => i !== index);
     setRows(updatedRows);
+    // console.log("--- handleRemoveRow");
   };
 
   const handleInputChange = (index: Number, field: string, value: string | BigInt) => {
+    // console.log("handleInputChange triggered");
+    // console.log("rows before:");
+    // console.log(rows);
     const updatedRows = rows.map((row, i) =>
       i === index ? { ...row, [field]: value } : row
     );
+    // console.log("rows after:");
+    // console.log(updatedRows);
     setRows(updatedRows);
+    // console.log("--- handleInputChange");
   };
 
   const [fullName, setFullName] = useState("Jason Yapri");
@@ -162,6 +173,12 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     let randomIdNumber = Math.floor(Math.random() * 1099511627776);
     while (!found) {
       randomIdNumber = Math.floor(Math.random() * 1099511627776);
+
+      // Check if the certificate ID already used or not inside rows.certificateIdNumber
+      if (rows.some((row) => row.certificateIdNumber === BigInt(randomIdNumber))) {
+        continue;
+      }
+
       certificateIdNumberTemp.current = BigInt(randomIdNumber);
       // console.log("certificateIdExists: ", certificateIdExists);
       const result = await refetch();
@@ -189,8 +206,10 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     generateRandomCertificateId().then((id) => {
       // setCertificateIdNumber(BigInt(id));
       // setCertificateId(convertToHex(id));
-      handleInputChange(0, 'setCertificateIdNumber', BigInt(id));
-      handleInputChange(0, 'certificateId', convertToHex(id));
+      let tempRows = rows;
+      tempRows[0].certificateIdNumber = BigInt(id);
+      tempRows[0].certificateId = convertToHex(id);
+      setRows(tempRows);
     });
   };
 
@@ -205,6 +224,16 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   //   await refetch();
   //   console.log("refetch done!");
   // }
+
+  const resetRecipients = () => {
+    generateRandomCertificateId(0).then((id) => {
+      let tempRows = [DEFAULT_ROW_OBJECT];
+      tempRows[0].certificateIdNumber = BigInt(id);
+      tempRows[0].certificateId = convertToHex(id);
+      setRows(tempRows);
+      // console.log('--- resetRecipients')
+    });
+  }
 
   return (
     <form
@@ -348,12 +377,13 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                       <TrashIcon />
                     </LoadingButton>
                   </ButtonGroup>
-                  {isLoading ? "Generating Certificate ID..." : ""}
+                  <div>{index == (rows.length-1) ? (isLoading ? "Generating Certificate ID..." : "") : ""}</div>
                 </Grid>
               </>
             ))}
             <Grid md={12} xs={12}>
-              <Button variant="contained" onClick={() => handleAddRow()}>Add Recipient</Button>
+              <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
+              {/* {JSON.stringify(rows)} */}
             </Grid>
           </Grid>
         </CardContent>
@@ -383,107 +413,125 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               // console.warn("imageUri", imageURI);
               // console.warn("imageURL", resolvedImageURL);
 
-              const tokenMetadata = {
-                "name": certificateName,
-                "created_by": issuer,
-                "external_url": externalUrl,
-                "description": description,
-                "attributes": [
-                  {
-                      "trait_type": "Certificate ID",
-                      "value": certificateId
-                  },
-                  {
-                      "trait_type": "Issuer",
-                      "value": issuer
-                  },
-                  {
-                      "trait_type": "Category",
-                      "value": certificateCategory
+              let walletAddresses: string[] = [];
+              let tokenURIs: string[] = [];
+              let certificateIds: bigint[] = [];
+              let dataHashes: `0x${string}`[] = [];
+              let imageHashes: `0x${string}`[] = [];
+
+              let index = 0;
+              for (let row of rows) {
+
+                const tokenMetadata = {
+                  "name": certificateName,
+                  "created_by": issuer,
+                  "external_url": externalUrl,
+                  "description": description,
+                  "attributes": [
+                    {
+                        "trait_type": "Certificate ID",
+                        "value": row.certificateId
                     },
-                  {
-                      "trait_type": "Type",
-                      "value": certificateType
+                    {
+                        "trait_type": "Issuer",
+                        "value": issuer
+                    },
+                    {
+                        "trait_type": "Category",
+                        "value": certificateCategory
+                      },
+                    {
+                        "trait_type": "Type",
+                        "value": certificateType
+                    },
+                    {
+                      "display_type": "number", 
+                        "trait_type": "Cohort",
+                        "value": cohort
+                    },
+                    {
+                        "trait_type": "Full Name",
+                        "value": row.fullName
+                    },
+                    {
+                        "trait_type": "Duration",
+                        "value": duration
+                    },
+                    {
+                        "trait_type": "Start Date",
+                        "value": startDate
+                    },
+                    {
+                        "trait_type": "End Date",
+                        "value": endDate
+                    },
+                    {
+                        "trait_type": "Instructor 1",
+                        "value": instructor1
+                    },
+                    {
+                        "trait_type": "Instructor 2",
+                        "value": instructor2
+                    },
+                    {
+                        "display_type": "date", 
+                        "trait_type": "Date Issued",
+                        "value": Date.now()
+                    },
+                  ],
+                  "image_details": {
+                    "bytes": fileSize,
+                    "format": fileType.split('/')[1].toUpperCase(),
+                    "keccak256": imageHash,
+                    "width": imageWidth,
+                    "height": imageHeight
                   },
-                  {
-                    "display_type": "number", 
-                      "trait_type": "Cohort",
-                      "value": cohort
-                  },
-                  {
-                      "trait_type": "Full Name",
-                      "value": fullName
-                  },
-                  {
-                      "trait_type": "Duration",
-                      "value": duration
-                  },
-                  {
-                      "trait_type": "Start Date",
-                      "value": startDate
-                  },
-                  {
-                      "trait_type": "End Date",
-                      "value": endDate
-                  },
-                  {
-                      "trait_type": "Instructor 1",
-                      "value": instructor1
-                  },
-                  {
-                      "trait_type": "Instructor 2",
-                      "value": instructor2
-                  },
-                  {
-                      "display_type": "date", 
-                      "trait_type": "Date Issued",
-                      "value": Date.now()
-                  },
-                ],
-                "image_details": {
-                  "bytes": fileSize,
-                  "format": fileType.split('/')[1].toUpperCase(),
-                  "keccak256": imageHash,
-                  "width": imageWidth,
-                  "height": imageHeight
-                },
-                "image": resolvedImageURL,
-                "image_url": resolvedImageURL
+                  "image": resolvedImageURL,
+                  "image_url": resolvedImageURL
+                };
+                // console.warn("tokenMetadata");
+                // console.warn(tokenMetadata);
+                const dataHash = keccak256(JSON.stringify(tokenMetadata));
+  
+                const _tokenURI = await upload({
+                    client,
+                    uploadWithoutDirectory: true,
+                    files: [tokenMetadata]
+                });
+                
+                // const tokenURL = resolveScheme({
+                //   client,
+                //   uri: _tokenURI,
+                // });
+  
+                // console.warn("_tokenURI", _tokenURI);
+                // console.warn("tokenURL", tokenURL);
+
+                walletAddresses.push(row.walletAddress);
+                tokenURIs.push(_tokenURI);
+                certificateIds.push(row.certificateIdNumber);
+                dataHashes.push(`0x${dataHash}`);
+                imageHashes.push(`0x${imageHash}`);
+                index++;
               };
-              // console.warn("tokenMetadata");
-              // console.warn(tokenMetadata);
-              const dataHash = keccak256(JSON.stringify(tokenMetadata));
-
-              const _tokenURI = await upload({
-                  client,
-                  uploadWithoutDirectory: true,
-                  files: [tokenMetadata]
-              });
-              
-              const tokenURL = resolveScheme({
-                client,
-                uri: _tokenURI,
-              });
-
-              // console.warn("_tokenURI", _tokenURI);
-              // console.warn("tokenURL", tokenURL);
+              // console.log(certificateIds);
 
               const tx = prepareContractCall({ 
                 contract, 
-                method: "function issueCertificate(address studentAddress, string _tokenURI, uint256 _certificateId, bytes32 dataHash, bytes32 fileHash)", 
-                params: [walletAddress, _tokenURI, BigInt(certificateIdNumber), `0x${dataHash}`, `0x${imageHash}`] 
+                method: "function batchIssueCertificates(address[] studentAddresses, string[] tokenURIs, uint256[] _certificateIds, bytes32[] dataHash, bytes32[] fileHash)", 
+                params: [walletAddresses, tokenURIs, certificateIds, dataHashes, imageHashes] 
               });
               return tx;
             }}
             onTransactionSent={(result) => {
-              refreshRandomCertificateId();
+              resetRecipients();
               toast.info("Issuing certificate...");
             }}
             onTransactionConfirmed={(receipt) => {
               // console.log("Transaction confirmed", receipt.transactionHash);
               toast.success(
                 <div>
-                  Certificate issued. Tx Hash:{' '}
+                  Certificates issued. Tx Hash:{' '}
                   <a href={`https://sepolia.basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
                     {receipt.transactionHash}
                   </a>
@@ -496,8 +544,10 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             }}
             disabled={isLoading || certificateIdExists}
           >
-            Issue Certificate
+            Batch Issue Certificate
           </TransactionButton>
+          {/* <Button onClick={() => resetRecipients()}>Reset Recipients</Button>
+          <Button onClick={() => console.log(rows)}>LogRows</Button> */}
           {/* <Button
             onClick={() => {
               uploadFileToIpfs().then((uri) => {
