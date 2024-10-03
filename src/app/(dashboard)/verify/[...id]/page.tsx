@@ -6,19 +6,21 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import { Download as DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, MutableRefObject } from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { getContract, prepareContractCall } from "thirdweb";
+import { Copy as CopyIcon } from '@phosphor-icons/react/dist/ssr/Copy';
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
 import { MyCertificateDetail } from '@/components/my-certificate/my-certificate-detail';
@@ -29,6 +31,9 @@ import Alert from '@mui/material/Alert';
 import { PBACERT } from "@/app/constants/contracts";
 import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
+import { config } from '@/config';
+import { keccak256 } from 'js-sha3';
+import { toast } from 'react-toastify';
 import { useParams } from 'next/navigation'
 
 type Attribute = {
@@ -40,6 +45,21 @@ type Attribute = {
 type ParamsType = {
   id?: string[];
 };
+
+import { styled } from '@mui/material/styles';
+import { margin } from '@mui/system';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 export default function Page(): React.JSX.Element {
 
@@ -53,9 +73,7 @@ export default function Page(): React.JSX.Element {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  let [certificateIdNumberParam, setCertificateIdNumberParam] = useState(BigInt(-1));
-
-  const [initialVerifyTriggered, setInitialVerifyTriggered] = useState(false);
+  const certificateIdNumberParam: MutableRefObject<bigint> = useRef(BigInt(-1));
 
   useEffect(() => {
     if (certificateId == undefined || certificateId == "") {
@@ -71,20 +89,35 @@ export default function Page(): React.JSX.Element {
     address: PBACERT,
   });
 
-  const { data: certificateIdExists, isLoading: isLoadingCheckCertificateId, refetch: refetchCertificateId } = useReadContract({
+  // const { data: nextTokenId, isPending, status, isRefetching, refetch, fetchStatus, isLoading: isLoadingNextTokenId, isFetching, isSuccess } = useReadContract({
+  //   contract,
+  //   method: "function nextTokenId() view returns (uint256)",
+  //   params: []
+  // });
+
+  const { data: certificateIdExists, isLoading: isLoadingCheckCertificateId, refetch: refetchCertificateId, isFetching: isFetchingCertificateId } = useReadContract({
     contract,
     method: "function certificateIds(uint256) view returns (bool)",
-    params: [certificateIdNumberParam],
+    params: [certificateIdNumberParam.current],
+  });
+
+  const certificateIdFileHash: MutableRefObject<`0x${string}`> = useRef('0x0');
+
+  const { data: receivedTokenId, isPending: isPendingGetCertificateTokenIdBasedOnFileHash, isLoading: isLoadingGetCertificateTokenIdBasedOnFileHash, refetch: refetchGetCertificateTokenIdBasedOnFileHash, isFetching: isFetchingGetCertificateTokenIdBasedOnFileHash } = useReadContract({
+    contract,
+    method: "function getCertificateTokenIdBasedOnFileHash(bytes32 _certificateFileHash) view returns (uint256)",
+    params: [certificateIdFileHash.current]
   });
 
   const DEFAULT_TOKEN_ID = BigInt(9999999999);
 
-  const [getCertificateTokenIdParam, setGetCertificateTokenIdParam] = useState(DEFAULT_TOKEN_ID);
+  const getCertificateTokenIdParam: MutableRefObject<bigint> = useRef(DEFAULT_TOKEN_ID);
 
-  const { data: certificateTokenId, isLoading: isLoadingGetCertificateTokenId, refetch: refetchCertificateTokenId } = useReadContract({
+
+  const { data: certificateTokenId, isLoading: isLoadingGetCertificateTokenId, refetch: refetchCertificateTokenId, isFetching: isFetchingCertificateTokenId } = useReadContract({
     contract,
     method: "function certificateTokenIdBasedOnCertificateId(uint256) view returns (uint256)",
-    params: [getCertificateTokenIdParam]
+    params: [getCertificateTokenIdParam.current]
   });
 
   const [certificate, setCertificate] = useState<any>(null);
@@ -105,6 +138,9 @@ export default function Page(): React.JSX.Element {
         const key = camelCase(attribute.trait_type);
         rawNft[key] = attribute.value;
       });
+      
+      setLastTriggeredCertificateId(rawNft.certificateId);
+      setCertificateId(rawNft.certificateId);
       setCertificate(rawNft);
       setIsLoading(false);
     }
@@ -118,49 +154,41 @@ export default function Page(): React.JSX.Element {
         contract,
         tokenId: _certificateTokenId,
       });
-      processCertificate(nft.metadata);
+      if (nft) processCertificate(nft.metadata);
     };
 
-    if (certificateTokenId) {
-      getNFTCertificate(certificateTokenId);
-    } else{
-      // console.log("getting certificateTokenId NO");
+    if (!isFetchingCertificateTokenId) {
+      if (certificateTokenId) {
+        getNFTCertificate(certificateTokenId);
+      } else{
+        // console.log("getting certificateTokenId NO");
+      }
     }
-  }, [certificateTokenId]);
+  }, [isFetchingCertificateTokenId]);
 
   useEffect(() => {
-    const getCertificateTokenId = async () => {
-      await refetchCertificateTokenId();
-    };
-    if (getCertificateTokenIdParam != DEFAULT_TOKEN_ID) {
-      getCertificateTokenId();
-      // console.log("getting certificateTokenId YES");
-    } else{
-      // console.log("getting certificateTokenId NO");
-      setIsLoading(false);
-      setCertificate(null);
+    if (!isFetchingCertificateId) {
+      if (certificateIdExists) {
+        // console.log("It exists");
+        getCertificateTokenIdParam.current = certificateIdNumberParam.current;
+        refetchCertificateTokenId();
+      } else{
+        getCertificateTokenIdParam.current = DEFAULT_TOKEN_ID;
+        setIsLoading(false);
+        setCertificate(null);
+      }
     }
-  }, [getCertificateTokenIdParam]);
+  }, [isFetchingCertificateId]);
 
   useEffect(() => {
-
-    if (certificateIdExists) {
-      // console.log("It exists");
-      setGetCertificateTokenIdParam(certificateIdNumberParam);
-    } else{
-      // console.log("It doesn't exists");
-      setGetCertificateTokenIdParam(DEFAULT_TOKEN_ID);
-      setIsLoading(false);
-      setCertificate(null);
+    if (client) {
+      // console.log(client);
+      // console.log(params);
+      if (params.id && params.id.length > 0) {
+        setCertificateId(params.id[0].replace(/[^0-9a-fA-F]/g, '').toUpperCase());
+      }
     }
-  }, [certificateIdExists]);
-
-  useEffect(() => {
-    const checkIfCertificateIdExists = async () => {
-      await refetchCertificateId();
-    };
-    checkIfCertificateIdExists();
-  }, [certificateIdNumberParam]);
+  }, [client]);
 
   const searchCertificateById = async () => {
     // console.log("searchCertificateById starts");
@@ -172,7 +200,8 @@ export default function Page(): React.JSX.Element {
       setCertificate(null);
       return;
     }
-    setCertificateIdNumberParam(BigInt(certificateIdNumber));
+    certificateIdNumberParam.current = BigInt(certificateIdNumber);
+    await refetchCertificateId();
     setLastTriggeredCertificateId(certificateId);
     
     // console.log("searchCertificateById done");
@@ -185,14 +214,43 @@ export default function Page(): React.JSX.Element {
   };
 
   useEffect(() => {
-    if (client) {
-      // console.log(client);
-      // console.log(params);
-      if (params.id && params.id.length > 0) {
-        setCertificateId(params.id[0].replace(/[^0-9a-fA-F]/g, '').toUpperCase());
+    const getNFTCertificate = async (_certificateTokenId: bigint) => {
+      // console.log("fetching NFT");
+      const nft = await getNFT({
+        contract,
+        tokenId: _certificateTokenId,
+      });
+      processCertificate(nft.metadata);
+    };
+
+    if (!isFetchingGetCertificateTokenIdBasedOnFileHash) {
+      console.log("receivedTokenId", receivedTokenId);
+      if (receivedTokenId) {
+        getNFTCertificate(receivedTokenId);
+      } else{
+        setIsLoading(false);
+        setCertificate(null);
       }
     }
-  }, [client]);
+  }, [isFetchingGetCertificateTokenIdBasedOnFileHash]);
+  
+  const handlePDFFileChange = (event: any) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        // Generate PDF hash
+        const response = await fetch(e.target?.result as string);
+        const arrayBuffer = await response.arrayBuffer();
+        const hash = keccak256(arrayBuffer);
+        certificateIdFileHash.current = `0x${hash}`;
+        setSearched(true);
+        setIsLoading(true);
+        refetchGetCertificateTokenIdBasedOnFileHash();
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
 
   return (
     <Stack spacing={3}>
@@ -220,6 +278,7 @@ export default function Page(): React.JSX.Element {
             value={certificateId}
             onChange={handleInputChange}
             placeholder="Search Certificate by ID"
+            disabled={isLoading}
             startAdornment={
               <InputAdornment position="start">
                 <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
@@ -236,6 +295,37 @@ export default function Page(): React.JSX.Element {
             <div>certificateIdNumberParam: {certificateIdNumberParam ? certificateIdNumberParam.toString() : "undefined"}</div>
             <div>certificateIdExists: {certificateIdExists ? "true" : "false"}</div>
         </> */}
+        <Box sx={{ mx: 5, display: 'inline' }}> OR </Box>
+        <Button
+          component="label"
+          role={undefined}
+          variant="contained"
+          tabIndex={-1}
+          startIcon={<CertificateIcon />}
+          color='secondary'
+          sx={{ p: 2 }}
+          disabled={isLoading}
+        >
+          Upload PDF Certificate
+          <VisuallyHiddenInput
+            type="file"
+            accept="application/pdf"
+            onChange={handlePDFFileChange}
+            // multiple
+          />
+        </Button>
+        {/* {JSON.stringify(receivedTokenId?.toString())} */}
+        {/* <Button onClick={() => {refetch()}}>Test</Button> */}
+      </Card>
+      <Card>
+        {/* <div>nextTokenId: { nextTokenId == undefined ? "undefined" : nextTokenId.toString() }</div>
+        <div>isPending: { isPending ? "true" : "false" }</div>
+        <div>status: { JSON.stringify(status) }</div>
+        <div>isRefetching: { isRefetching ? "true" : "false" }</div>
+        <div>fetchStatus: { fetchStatus.toString() }</div>
+        <div>isLoadingNextTokenId: { isLoadingNextTokenId ? "true" : "false" }</div>
+        <div>isFetching: { isFetching ? "true" : "false" }</div>
+        <div>isSuccess: { isSuccess ? "true" : "false" }</div> */}
       </Card>
       <Grid container spacing={3}>
         { searched ? (

@@ -9,14 +9,14 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import LoadingButton from '@mui/lab/LoadingButton';
-import SaveIcon from '@mui/icons-material/Save';
+// import SaveIcon from '@mui/icons-material/Save';
 
 export function VerifyFilters(searchCertificateById: (id: string) => void): React.JSX.Element {
 
   return (
     <Card sx={{ p: 2 }}>
       <ButtonGroup variant="outlined" aria-label="Basic button group">
-        <OutlinedInput
+        {/* <OutlinedInput
           value={certificateId}
           onChange={(e) => (e.target.value)}
           placeholder="Search Certificate by ID"
@@ -25,10 +25,10 @@ export function VerifyFilters(searchCertificateById: (id: string) => void): Reac
               <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
             </InputAdornment>
           }
-        />
-        <LoadingButton sx={{ p: 2 }} loading={false} loadingPosition="start" variant="contained" startIcon={(<MagnifyingGlassIcon />)} onClick={() => {searchCertificateById(certificateId)}}>
+        /> */}
+        {/* <LoadingButton sx={{ p: 2 }} loading={false} loadingPosition="start" variant="contained" startIcon={(<MagnifyingGlassIcon />)} onClick={() => {searchCertificateById(certificateId)}}>
           Search
-        </LoadingButton>
+        </LoadingButton> */}
       </ButtonGroup>
     </Card>
   );

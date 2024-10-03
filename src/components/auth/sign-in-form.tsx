@@ -75,9 +75,9 @@ export function SignInForm(): React.JSX.Element {
         <Typography variant="h4">Sign in</Typography>
         <Typography color="text.secondary" variant="body2">
           Don&apos;t have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
+          {/* <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
             Sign up
-          </Link>
+          </Link> */}
         </Typography>
       </Stack>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -128,9 +128,9 @@ export function SignInForm(): React.JSX.Element {
             )}
           />
           <div>
-            <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
+            {/* <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
               Forgot password?
-            </Link>
+            </Link> */}
           </div>
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
           <Button disabled={isPending} type="submit" variant="contained">
