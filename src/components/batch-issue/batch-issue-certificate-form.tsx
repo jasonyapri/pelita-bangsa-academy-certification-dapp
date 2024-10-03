@@ -17,6 +17,8 @@ import Select from '@mui/material/Select';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Grid from '@mui/material/Unstable_Grid2';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
+import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
+import { Copy as CopyIcon } from '@phosphor-icons/react/dist/ssr/Copy';
 import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
@@ -58,27 +60,54 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [imageWidth, setImageWidth] = useState<number | null>(null);
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
+  const [pdfHash, setPDFHash] = useState<string | null>(null);
+
+  const handlePDFFileChange = (event: any, index: number) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const reader = new FileReader();
+      let targetIndex: number = index;
+      reader.onload = async (e) => {
+        // Generate PDF hash
+        const response = await fetch(e.target?.result as string);
+        const arrayBuffer = await response.arrayBuffer();
+        const hash = keccak256(arrayBuffer);
+        // console.log(hash);
+
+        let tempRows = rows;
+        // console.log(targetIndex);
+        // console.log(tempRows);
+        tempRows[targetIndex].fileHash = hash;
+        // console.log(tempRows);
+        setRows(tempRows);
+        setTestBool(!testBool);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
 
   const handleFileChange = (event: any) => {
     const selectedFile = event.target.files[0];
-    setFile(event.target.files[0]);
+    if (selectedFile) {
+      setFile(event.target.files[0]);
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const img = new Image();
-      img.onload = () => {
-        setImageWidth(img.width);
-        setImageHeight(img.height);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const img = new Image();
+        img.onload = () => {
+          setImageWidth(img.width);
+          setImageHeight(img.height);
+        };
+        img.src = e.target?.result as string;
+
+        // Generate image hash
+        const response = await fetch(e.target?.result as string);
+        const arrayBuffer = await response.arrayBuffer();
+        const hash = keccak256(arrayBuffer);
+        setImageHash(hash);
       };
-      img.src = e.target?.result as string;
-
-      // Generate image hash
-      const response = await fetch(e.target?.result as string);
-      const arrayBuffer = await response.arrayBuffer();
-      const hash = keccak256(arrayBuffer);
-      setImageHash(hash);
-    };
-    reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
   const contract = getContract({
@@ -87,15 +116,24 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     address: PBACERT,
   });
 
-  const DEFAULT_ROW_OBJECT = { fullName: '', walletAddress: '', certificateId: '', certificateIdNumber: BigInt(0), fileHash: '', dataHash: '' };
+  const DEFAULT_ROW_OBJECT = { fullName: '', walletAddress: '', certificateId: '', certificateIdNumber: BigInt(0), fileHash: null, dataHash: '' };
 
-  const [rows, setRows] = useState([
+  type Row = {
+    fullName: string;
+    walletAddress: string;
+    certificateId: string;
+    certificateIdNumber: bigint;
+    fileHash: string | null;
+    dataHash: string;
+  }
+
+  const [rows, setRows] = useState<Row[]>([
     DEFAULT_ROW_OBJECT
   ]);
 
   const handleAddRow = () => {
     generateRandomCertificateId().then((id) => {
-      let tempRow = { fullName: '', walletAddress: '', certificateId: convertToHex(id), certificateIdNumber: BigInt(id), fileHash: '', dataHash: '' };
+      let tempRow = { fullName: '', walletAddress: '', certificateId: convertToHex(id), certificateIdNumber: BigInt(id), fileHash: null, dataHash: '' };
       setRows([...rows, tempRow]);
       // console.log("--- handleAddRow");
     });
@@ -135,6 +173,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
   const [certificateId, setCertificateId] = useState("0000000000");
   const [certificateIdNumber, setCertificateIdNumber] = useState<bigint>(BigInt(0));
+  const [testBool, setTestBool] = useState(false);
   const [description, setDescription] = useState("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
 
   const certificateIdNumberTemp = useRef(BigInt(0));
@@ -226,11 +265,12 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   // }
 
   const resetRecipients = () => {
-    generateRandomCertificateId(0).then((id) => {
+    generateRandomCertificateId().then((id) => {
       let tempRows = [DEFAULT_ROW_OBJECT];
       tempRows[0].certificateIdNumber = BigInt(id);
       tempRows[0].certificateId = convertToHex(id);
       setRows(tempRows);
+      setTestBool(!testBool);
       // console.log('--- resetRecipients')
     });
   }
@@ -332,14 +372,14 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                 tabIndex={-1}
                 startIcon={<FileArrowUpIcon />}
               >
-                Upload file
+                Upload NFT Image
                 <VisuallyHiddenInput
                   type="file"
                   accept="image/jpeg, image/png"
                   onChange={handleFileChange}
                   // multiple
                 />
-              </Button> &nbsp;{file && `Selected file: ${file.name}`}
+              </Button> &nbsp;{file && `${file.name}`}
             </Grid>
             <Grid md={12} xs={12}>
               <FormControl fullWidth required>
@@ -349,7 +389,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             </Grid>
             { rows.map((row, index) => (
               <>
-                <Grid md={4} xs={12}>
+                <Grid md={3} xs={12}>
                   <ButtonGroup variant="outlined" aria-label="Basic button group">
                     <Button disabled={true}>{ index+1 }</Button>
                     <FormControl fullWidth required>
@@ -358,13 +398,38 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                     </FormControl>
                   </ButtonGroup>
                 </Grid>
-                <Grid md={4} xs={12}>
+                <Grid md={3} xs={12}>
                   <FormControl fullWidth required>
                     <InputLabel>Wallet address</InputLabel>
                     <OutlinedInput label="Wallet address" name="walletAddress"  value={row.walletAddress} onChange={(e) => handleInputChange(index, 'walletAddress', e.target.value)} />
                   </FormControl>
                 </Grid>
-                <Grid md={4} xs={12}>
+                <Grid md={3} xs={12}>
+                  <ButtonGroup variant="outlined" aria-label="Basic button group">
+                    <Button
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<CertificateIcon />}
+                      color='secondary'
+                    >
+                      <VisuallyHiddenInput
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => handlePDFFileChange(e, index)}
+                        // multiple
+                      />
+                    </Button>
+                    <OutlinedInput
+                      value={row.fileHash && `${row.fileHash.substring(0, 5)}........${row.fileHash.substring(row.fileHash.length - 5)}`}
+                      disabled={true}
+                      placeholder="PDF Hash"
+                    />
+                    <Button onClick={() => {if (row.fileHash){ navigator.clipboard.writeText(row.fileHash); toast.info("Certificate PDF File Hash Copied to clipboard") }}} disabled={row.fileHash == null ? true : false}><CopyIcon /></Button>
+                  </ButtonGroup>
+                </Grid>
+                <Grid md={3} xs={12}>
                   <ButtonGroup variant="outlined" aria-label="Basic button group">
                     <FormControl fullWidth required>
                       <InputLabel>Certificate ID</InputLabel>
@@ -383,7 +448,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             ))}
             <Grid md={12} xs={12}>
               <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
-              {/* {JSON.stringify(rows)} */}
+              {/* {rows[0] ? JSON.stringify(rows[0].fileHash) : ""} */}
             </Grid>
           </Grid>
         </CardContent>
@@ -395,14 +460,14 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             transaction={async () => {
               if (!file) {
                 // console.error("File is not uploaded yet.");
-                return Promise.reject(new Error("File is not uploaded yet!"));
+                return Promise.reject(new Error("NFT Image is not uploaded yet!"));
               }
 
               const fileSize = file.size;
               const fileType = file.type;
 
               if (file.type !== "image/jpeg" && file.type !== "image/png") {
-                return Promise.reject(new Error("File should be an image!"));
+                return Promise.reject(new Error("NFT Image should be an image!"));
               }
 
               const imageURI = await uploadFileToIpfs();
@@ -417,10 +482,14 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               let tokenURIs: string[] = [];
               let certificateIds: bigint[] = [];
               let dataHashes: `0x${string}`[] = [];
-              let imageHashes: `0x${string}`[] = [];
+              let pdfHashes: `0x${string}`[] = [];
 
               let index = 0;
               for (let row of rows) {
+
+                if (row.fileHash == null || row.fileHash == "") {
+                  return Promise.reject(new Error("Certificate PDF File Hash should be generated!"));
+                }
 
                 const tokenMetadata = {
                   "name": certificateName,
@@ -511,7 +580,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                 tokenURIs.push(_tokenURI);
                 certificateIds.push(row.certificateIdNumber);
                 dataHashes.push(`0x${dataHash}`);
-                imageHashes.push(`0x${imageHash}`);
+                pdfHashes.push(`0x${row.fileHash}`); // pdf
                 index++;
               };
               // console.log(certificateIds);
@@ -519,7 +588,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               const tx = prepareContractCall({ 
                 contract, 
                 method: "function batchIssueCertificates(address[] studentAddresses, string[] tokenURIs, uint256[] _certificateIds, bytes32[] dataHash, bytes32[] fileHash)", 
-                params: [walletAddresses, tokenURIs, certificateIds, dataHashes, imageHashes] 
+                params: [walletAddresses, tokenURIs, certificateIds, dataHashes, pdfHashes] 
               });
               return tx;
             }}
@@ -542,7 +611,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               // console.error("Transaction error", error);
               toast.error(error.message);
             }}
-            disabled={isLoading || certificateIdExists}
+            disabled={isLoading || certificateIdExists || file == null}
           >
             Batch Issue Certificate
           </TransactionButton>

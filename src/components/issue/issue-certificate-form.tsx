@@ -15,9 +15,12 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Grid from '@mui/material/Unstable_Grid2';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
+import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
+import { Copy as CopyIcon } from '@phosphor-icons/react/dist/ssr/Copy';
 import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
+import ButtonGroup from '@mui/material/ButtonGroup';
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
 import { PBACERT } from "@/app/constants/contracts";
 import { toast } from 'react-toastify';
@@ -55,27 +58,45 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [imageWidth, setImageWidth] = useState<number | null>(null);
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
+  const [pdfHash, setPDFHash] = useState<string | null>(null);
+
+  const handlePDFFileChange = (event: any) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        // Generate PDF hash
+        const response = await fetch(e.target?.result as string);
+        const arrayBuffer = await response.arrayBuffer();
+        const hash = keccak256(arrayBuffer);
+        setPDFHash(hash);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
 
   const handleFileChange = (event: any) => {
     const selectedFile = event.target.files[0];
-    setFile(event.target.files[0]);
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const img = new Image();
-      img.onload = () => {
-        setImageWidth(img.width);
-        setImageHeight(img.height);
+    if (selectedFile) {
+      setFile(event.target.files[0]);
+  
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const img = new Image();
+        img.onload = () => {
+          setImageWidth(img.width);
+          setImageHeight(img.height);
+        };
+        img.src = e.target?.result as string;
+  
+        // Generate image hash
+        const response = await fetch(e.target?.result as string);
+        const arrayBuffer = await response.arrayBuffer();
+        const hash = keccak256(arrayBuffer);
+        setImageHash(hash);
       };
-      img.src = e.target?.result as string;
-
-      // Generate image hash
-      const response = await fetch(e.target?.result as string);
-      const arrayBuffer = await response.arrayBuffer();
-      const hash = keccak256(arrayBuffer);
-      setImageHash(hash);
-    };
-    reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
   const contract = getContract({
@@ -295,6 +316,31 @@ export function IssueCertificateForm(): React.JSX.Element {
               </FormControl>
             </Grid>
             <Grid md={12} xs={12}>
+              <ButtonGroup variant="outlined" aria-label="Basic button group">
+                <Button
+                  component="label"
+                  role={undefined}
+                  variant="contained"
+                  tabIndex={-1}
+                  startIcon={<CertificateIcon />}
+                  color='secondary'
+                >
+                  <VisuallyHiddenInput
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePDFFileChange}
+                    // multiple
+                  />
+                </Button>
+                <OutlinedInput
+                  value={pdfHash && `${pdfHash.substring(0, 5)}........${pdfHash.substring(pdfHash.length - 5)}`}
+                  disabled={true}
+                  placeholder="PDF Hash"
+                />
+                <Button onClick={() => {if (pdfHash){ navigator.clipboard.writeText(pdfHash); toast.info("Certificate PDF File Hash Copied to clipboard") }}} disabled={pdfHash == null ? true : false}><CopyIcon /></Button>
+              </ButtonGroup>
+            </Grid>
+            <Grid md={12} xs={12}>
               <Button
                 component="label"
                 role={undefined}
@@ -302,18 +348,17 @@ export function IssueCertificateForm(): React.JSX.Element {
                 tabIndex={-1}
                 startIcon={<FileArrowUpIcon />}
               >
-                Upload file
+                Upload NFT Image
                 <VisuallyHiddenInput
                   type="file"
                   accept="image/jpeg, image/png"
                   onChange={handleFileChange}
                   // multiple
                 />
-              </Button> &nbsp;{file && `Selected file: ${file.name}`}
+              </Button> &nbsp;{file && `${file.name}`}
               {/* {isPending ? "isPending"  : "not pending"} */}
             </Grid>
           </Grid>
-          
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
@@ -321,16 +366,20 @@ export function IssueCertificateForm(): React.JSX.Element {
           <TransactionButton
             type="submit"
             transaction={async () => {
+              if (pdfHash == null) {
+                return Promise.reject(new Error("Certificate PDF File Hash should be generated!"));
+              }
+
               if (!file) {
                 // console.error("File is not uploaded yet.");
-                return Promise.reject(new Error("File is not uploaded yet!"));
+                return Promise.reject(new Error("NFT Image is not uploaded yet!"));
               }
 
               const fileSize = file.size;
               const fileType = file.type;
 
               if (file.type !== "image/jpeg" && file.type !== "image/png") {
-                return Promise.reject(new Error("File should be an image!"));
+                return Promise.reject(new Error("NFT Image should be an image file!"));
               }
 
               const imageURI = await uploadFileToIpfs();
@@ -429,7 +478,7 @@ export function IssueCertificateForm(): React.JSX.Element {
               const tx = prepareContractCall({ 
                 contract, 
                 method: "function issueCertificate(address studentAddress, string _tokenURI, uint256 _certificateId, bytes32 dataHash, bytes32 fileHash)", 
-                params: [walletAddress, _tokenURI, BigInt(certificateIdNumber), `0x${dataHash}`, `0x${imageHash}`] 
+                params: [walletAddress, _tokenURI, BigInt(certificateIdNumber), `0x${dataHash}`, `0x${pdfHash}`] 
               });
               return tx;
             }}
@@ -452,7 +501,7 @@ export function IssueCertificateForm(): React.JSX.Element {
               // console.error("Transaction error", error);
               toast.error(error.message);
             }}
-            disabled={isLoading || certificateIdExists}
+            disabled={isLoading || certificateIdExists || pdfHash == null || file == null}
           >
             Issue Certificate
           </TransactionButton>
