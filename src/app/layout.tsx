@@ -18,7 +18,8 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const activeChain = "baseSepolia"
+// const activeChain = "baseSepolia"
+const activeChain = "base"
 
 export const metadata = { title: `${config.site.name}` } satisfies Metadata;
 

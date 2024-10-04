@@ -112,7 +112,8 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    chain: baseSepolia,
+    // chain: baseSepolia,
+    chain: base,
     address: PBACERT,
   });
 

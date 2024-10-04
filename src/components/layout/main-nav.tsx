@@ -31,7 +31,8 @@ export function MainNav(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    chain: baseSepolia,
+    // chain: baseSepolia,
+    chain: base,
     address: COUNTER,
   });
 
