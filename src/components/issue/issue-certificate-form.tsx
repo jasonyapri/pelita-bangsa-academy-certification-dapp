@@ -106,8 +106,8 @@ export function IssueCertificateForm(): React.JSX.Element {
     address: PBACERT,
   });
 
-  const [fullName, setFullName] = useState("Jason Yapri");
-  const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
+  const [fullName, setFullName] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
   const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
   const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
