@@ -16,6 +16,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Grid from '@mui/material/Unstable_Grid2';
+import Box from '@mui/material/Box';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
 import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
 import { Copy as CopyIcon } from '@phosphor-icons/react/dist/ssr/Copy';
@@ -28,6 +29,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
+import { generateCertificates } from '../generate-certificates';
 
 const certificateCategories = [
   { value: 'Bootcamp', label: 'Bootcamp' },
@@ -276,6 +278,15 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     });
   }
 
+  const downloadCertificates = () => {
+    rows.forEach((row) => {
+      const { fullName, certificateId } = row;
+      if (fullName && certificateId) {
+        generateCertificates(fullName, certificateId);
+      }
+    });
+  };  
+
   return (
     <form
       onSubmit={(event) => {
@@ -448,8 +459,17 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               </>
             ))}
             <Grid md={12} xs={12}>
-              <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
-              {/* {rows[0] ? JSON.stringify(rows[0].fileHash) : ""} */}
+              <Box display="flex" gap={2}>
+                <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={downloadCertificates}
+                  disabled={isLoading || rows.length === 0}
+                >
+                  Download Certificates
+                </Button>
+              </Box>
             </Grid>
           </Grid>
         </CardContent>
