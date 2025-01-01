@@ -22,7 +22,7 @@ import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
@@ -101,8 +101,7 @@ export function IssueCertificateForm(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 

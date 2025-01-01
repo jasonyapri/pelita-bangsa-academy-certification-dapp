@@ -17,7 +17,7 @@ import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react"
-import { COUNTER } from "@/app/constants/contracts";
+import { COUNTER, getActiveChain } from "@/app/constants/contracts";
 
 import { usePopover } from '@/hooks/use-popover';
 
@@ -31,8 +31,7 @@ export function MainNav(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: COUNTER,
   });
 
@@ -83,6 +82,11 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
+            { process.env.NEXT_PUBLIC_DEVELOPMENT_MODE == "true" && (
+              <Button variant="outlined" size="small" disabled={true}>
+                Testnet
+              </Button>
+            )}
             {/* <Tooltip title="Search">
               <IconButton>
                 <MagnifyingGlassIcon />

@@ -16,7 +16,7 @@ import { base, baseSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
 import { useReadContract } from "thirdweb/react";
 import { getContract, prepareContractCall } from "thirdweb";
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -39,8 +39,7 @@ export function SideNav(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 

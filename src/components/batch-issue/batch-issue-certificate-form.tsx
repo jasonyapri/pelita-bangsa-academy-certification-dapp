@@ -23,7 +23,7 @@ import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
@@ -112,7 +112,6 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
     chain: base,
     address: PBACERT,
   });

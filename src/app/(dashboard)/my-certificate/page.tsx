@@ -14,7 +14,7 @@ import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
 import { Card, CardMedia } from '@mui/material';
 import { getOwnedNFTs } from "thirdweb/extensions/erc721";
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, DEFAULT_CHAIN, getActiveChain } from "@/app/constants/contracts";
 import { useActiveAccount, MediaRenderer } from "thirdweb/react";
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { MyCertificateDetail } from '@/components/my-certificate/my-certificate-detail';
@@ -27,7 +27,6 @@ import { CompaniesFilters } from '@/components/integrations/integrations-filters
 import Alert from '@mui/material/Alert';
 import { useReadContract } from "thirdweb/react";
 import { getContract, prepareContractCall } from "thirdweb";
-import { base, baseSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
 import { Container } from '@mui/system';
 
@@ -77,8 +76,7 @@ export default function Page(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 
