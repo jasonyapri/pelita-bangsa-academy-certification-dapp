@@ -84,7 +84,7 @@ export function MainNav(): React.JSX.Element {
             </IconButton>
             { process.env.NEXT_PUBLIC_DEVELOPMENT_MODE == "true" && (
               <Button variant="outlined" size="small" disabled={true}>
-                Testnet
+                Testnet v1.3
               </Button>
             )}
             {/* <Tooltip title="Search">
