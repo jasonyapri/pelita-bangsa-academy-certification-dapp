@@ -29,7 +29,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
-import { generateCertificates } from '@/components/certificate/generate-certificate';
+import { generateCertificate } from '@/components/certificate/generate-certificate';
 import * as XLSX from 'xlsx';
 
 const certificateCategories = [
@@ -326,11 +326,20 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   }
 
   const downloadCertificates = () => {
-    rows.forEach((row) => {
+    let i = 0;
+    rows.forEach(async (row) => {
       const { fullName, certificateId } = row;
       if (fullName && certificateId) {
-        generateCertificates(fullName, certificateId, certificateTemplate);
+        const hash = await generateCertificate(fullName, certificateId, certificateTemplate);
+        let tempRows = rows;
+        // console.log(targetIndex);
+        // console.log(tempRows);
+        tempRows[i].fileHash = hash;
+        // console.log(tempRows);
+        setRows(tempRows);
+        setTestBool(!testBool);
       }
+      i++;
     });
   };
 
