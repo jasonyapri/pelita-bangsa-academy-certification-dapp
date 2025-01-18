@@ -40,10 +40,15 @@ const certificateCategories = [
 ] as const;
 
 const certificateTemplates = [
+  // Test
   { value: 'test-pba-bootcamp', label: 'Test' },
   // { value: 'test-pba-bootcamp', label: 'PBA Bootcamp' },
   { value: 'test-lisk-bootcamp', label: 'Lisk Bootcamp' },
   { value: 'test-icp-bootcamp', label: 'ICP Bootcamp' },
+  // Production
+  // { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
+  // { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
+  // { value: 'icp-bootcamp', label: 'ICP Bootcamp' },
 ] as const;
 
 const certificateTypes = [
