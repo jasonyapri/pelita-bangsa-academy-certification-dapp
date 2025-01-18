@@ -212,19 +212,17 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   };
   const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
 
-  const [fullName, setFullName] = useState("Jason Yapri");
-  const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
-  const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
+  const [certificateName, setCertificateName] = useState("");
   const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);
-  const [duration, setDuration] = useState("21 sessions");
-  const [startDate, setStartDate] = useState("June 11, 2024");
-  const [endDate, setEndDate] = useState("August 29, 2024");
-  const [instructor1, setInstructor1] = useState("Jason Yapri");
-  const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
-  const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
+  const [duration, setDuration] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [instructor1, setInstructor1] = useState("");
+  const [instructor2, setInstructor2] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
   const [certificateId, setCertificateId] = useState("0000000000");
   const [certificateIdNumber, setCertificateIdNumber] = useState<bigint>(BigInt(0));
   const [testBool, setTestBool] = useState(false);
@@ -237,6 +235,49 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     method: "function certificateIds(uint256) view returns (bool)",
     params: [certificateIdNumberTemp.current]
   });
+
+  useEffect(() => {
+    if (certificateTemplate.includes("lisk-bootcamp")) {
+      setCertificateName("BUIDL Your Web3 Ideas with Lisk");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Workshop");
+      setCertificateType("Certificate of Completion");
+      setCohort(1);
+      setDuration("6 sessions");
+      setStartDate("October 14, 2024");
+      setEndDate("November 18, 2024");
+      setInstructor1("Jason Yapri");
+      setInstructor2("Yevonnael Andrew");
+      setExternalUrl("https://lu.ma/s61fou1v");
+      setDescription("This is to certify that the bearer has successfully completed a 6-session online workshop that covers Introduction to Lisk Blockchain, Introduction to Solidity Programming Language, Building UI and Application Frameworks, Web3 Application Ideas Brainstorming, Developing Your First Web3 Application on Lisk and Exploring Advanced Web3 Application Development on Lisk.");
+    } else if(certificateTemplate.includes("icp-bootcamp")) {
+      setCertificateName("Learn to deploy dApp on ICP");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Workshop");
+      setCertificateType("Certificate of Completion");
+      setCohort(1);
+      setDuration("6 sessions");
+      setStartDate("November 6, 2024");
+      setEndDate("December 11, 2024");
+      setInstructor1("Yevonnael Andrew");
+      setInstructor2("Jason Yapri");
+      setExternalUrl("https://lu.ma/kzte81f4");
+      setDescription("This is to certify that the bearer has successfully completed a 6-session workshop that covers Introduction to the Internet Computer Protocol (ICP), Smart Contract Development with Motoko, Advanced Canister and Interacting with Ethereum, Frontend Integration and dApp Development, Decentralized AI dApps and Project Deployment.");
+    } else if(certificateTemplate.includes("pba-bootcamp")) {
+      setCertificateName("Blockchain Developer Bootcamp");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Bootcamp");
+      setCertificateType("Certificate of Completion");
+      setCohort(2);
+      setDuration("23 sessions");
+      setStartDate("September 10, 2024");
+      setEndDate("December 17, 2024");
+      setInstructor1("Jason Yapri");
+      setInstructor2("Yevonnael Andrew");
+      setExternalUrl("https://www.pelitabangsa.co.id/bootcamp");
+      setDescription("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
+    }
+  }, [certificateTemplate]);
 
   const uploadFileToIpfs = async () => {
     if (!file) {
