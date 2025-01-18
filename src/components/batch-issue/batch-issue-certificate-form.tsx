@@ -41,10 +41,9 @@ const certificateCategories = [
 
 const certificateTemplates = [
   // Test
-  { value: 'test-pba-bootcamp', label: 'Test' },
-  // { value: 'test-pba-bootcamp', label: 'PBA Bootcamp' },
-  { value: 'test-lisk-bootcamp', label: 'Lisk Bootcamp' },
-  { value: 'test-icp-bootcamp', label: 'ICP Bootcamp' },
+  { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
+  { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
+  { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
   // Production
   // { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
   // { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
@@ -211,13 +210,13 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     setRows(updatedRows);
     // console.log("--- handleInputChange");
   };
+  const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
 
   const [fullName, setFullName] = useState("Jason Yapri");
   const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
   const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
   const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
-  const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);
   const [duration, setDuration] = useState("21 sessions");
