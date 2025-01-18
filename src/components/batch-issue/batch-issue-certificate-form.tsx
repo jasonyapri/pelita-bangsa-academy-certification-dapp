@@ -39,6 +39,13 @@ const certificateCategories = [
   { value: 'Miscellaneous', label: 'Miscellaneous' },
 ] as const;
 
+const certificateTemplates = [
+  { value: 'test-pba-bootcamp', label: 'Test' },
+  // { value: 'test-pba-bootcamp', label: 'PBA Bootcamp' },
+  { value: 'test-lisk-bootcamp', label: 'Lisk Bootcamp' },
+  { value: 'test-icp-bootcamp', label: 'ICP Bootcamp' },
+] as const;
+
 const certificateTypes = [
   { value: 'Certificate of Completion', label: 'Certificate of Completion' },
 ] as const;
@@ -67,8 +74,10 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [excelData, setExcelData] = useState<object[] | unknown[] | null>(null);
 
-  const handleExcelFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleExcelFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const files = e.target.files;
+    if (!files) return;
+    const file = files[0];
     const reader = new FileReader();
 
     reader.onload = async (event) => {
@@ -203,6 +212,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
   const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
+  const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);
   const [duration, setDuration] = useState("21 sessions");
@@ -319,7 +329,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     rows.forEach((row) => {
       const { fullName, certificateId } = row;
       if (fullName && certificateId) {
-        generateCertificates(fullName, certificateId);
+        generateCertificates(fullName, certificateId, certificateTemplate);
       }
     });
   };
@@ -358,6 +368,18 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
         {/* <Divider /> */}
         <CardContent>
           <Grid container spacing={3}>
+            <Grid md={12} xs={12}>
+            <FormControl fullWidth>
+                <InputLabel>Certificate Template</InputLabel>
+                <Select label="Certificate Template" name="certificateTemplate" variant="outlined" value={certificateTemplate} onChange={(e) => setCertificateTemplate(e.target.value)}>
+                  {certificateTemplates.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Certificate Name</InputLabel>

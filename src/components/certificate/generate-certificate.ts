@@ -1,9 +1,9 @@
 import { jsPDF } from 'jspdf';
 import '@/components/fonts/lucidity-expanded.js';
 import '@/components/fonts/montserrat-medium.js';
-export const generateCertificates = (fullName: string, certificateId: string) => {
+export const generateCertificates = (fullName: string, certificateId: string, certificateTemplate: string) => {
   const img = new Image();
-  img.src = '/assets/certificate/test-pba-bootcamp-certificate-template.png';
+  img.src = `/assets/certificate/${certificateTemplate}-certificate-template.png`;
   img.onload = () => {
     const imgWidth = img.width;
     const imgHeight = img.height;
