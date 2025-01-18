@@ -16,6 +16,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Grid from '@mui/material/Unstable_Grid2';
+import Box from '@mui/material/Box';
 import { FileArrowUp as FileArrowUpIcon } from '@phosphor-icons/react/dist/ssr/FileArrowUp';
 import { Certificate as CertificateIcon } from '@phosphor-icons/react/dist/ssr/Certificate';
 import { Copy as CopyIcon } from '@phosphor-icons/react/dist/ssr/Copy';
@@ -23,17 +24,30 @@ import { client } from "@/app/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
 import { ConnectButton, useActiveAccount, useReadContract, useSendTransaction, TransactionButton, MediaRenderer } from "thirdweb/react"
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
+import { generateCertificate } from '@/components/certificate/generate-certificate';
+import * as XLSX from 'xlsx';
 
 const certificateCategories = [
   { value: 'Bootcamp', label: 'Bootcamp' },
   { value: 'Workshop', label: 'Workshop' },
   { value: 'Training', label: 'Training' },
   { value: 'Miscellaneous', label: 'Miscellaneous' },
+] as const;
+
+const certificateTemplates = [
+  // Test
+  { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
+  { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
+  { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
+  // Production
+  // { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
+  // { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
+  // { value: 'icp-bootcamp', label: 'ICP Bootcamp' },
 ] as const;
 
 const certificateTypes = [
@@ -61,6 +75,45 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
   const [pdfHash, setPDFHash] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [excelData, setExcelData] = useState<object[] | unknown[] | null>(null);
+
+  const handleExcelFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const files = e.target.files;
+    if (!files) return;
+    const file = files[0];
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      if (event.target?.result) {
+        const workbook = XLSX.read(event.target.result, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+        if (sheetData.length > 0) {
+          const newRows = await Promise.all(sheetData.map(async (row: any, index: number) => {
+            const id = await generateRandomCertificateId();
+            return {
+              ...row,
+              fullName: row['full_name'] || '',
+              walletAddress: row['wallet_address'] || '',
+              certificateId: convertToHex(id),
+              certificateIdNumber: BigInt(id),
+              fileHash: null,
+              dataHash: ''
+            };
+          }));
+
+          setRows(newRows);
+        }
+        
+      }
+    };
+
+    reader.readAsBinaryString(file);
+  };
+
 
   const handlePDFFileChange = (event: any, index: number) => {
     const selectedFile = event.target.files[0];
@@ -112,8 +165,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 
@@ -158,20 +210,19 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     setRows(updatedRows);
     // console.log("--- handleInputChange");
   };
+  const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
 
-  const [fullName, setFullName] = useState("Jason Yapri");
-  const [walletAddress, setWalletAddress] = useState("0xD86399B0D9ac3a9A7fCFc1dd90c67Ece2792Fbe7");
-  const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
+  const [certificateName, setCertificateName] = useState("");
   const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);
-  const [duration, setDuration] = useState("21 sessions");
-  const [startDate, setStartDate] = useState("June 11, 2024");
-  const [endDate, setEndDate] = useState("August 29, 2024");
-  const [instructor1, setInstructor1] = useState("Jason Yapri");
-  const [instructor2, setInstructor2] = useState("Yevonnael Andrew");
-  const [externalUrl, setExternalUrl] = useState("https://www.pelitabangsa.co.id/bootcamp");
+  const [duration, setDuration] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [instructor1, setInstructor1] = useState("");
+  const [instructor2, setInstructor2] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
   const [certificateId, setCertificateId] = useState("0000000000");
   const [certificateIdNumber, setCertificateIdNumber] = useState<bigint>(BigInt(0));
   const [testBool, setTestBool] = useState(false);
@@ -184,6 +235,49 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     method: "function certificateIds(uint256) view returns (bool)",
     params: [certificateIdNumberTemp.current]
   });
+
+  useEffect(() => {
+    if (certificateTemplate.includes("lisk-bootcamp")) {
+      setCertificateName("BUIDL Your Web3 Ideas with Lisk");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Workshop");
+      setCertificateType("Certificate of Completion");
+      setCohort(1);
+      setDuration("6 sessions");
+      setStartDate("October 14, 2024");
+      setEndDate("November 18, 2024");
+      setInstructor1("Jason Yapri");
+      setInstructor2("Yevonnael Andrew");
+      setExternalUrl("https://lu.ma/s61fou1v");
+      setDescription("This is to certify that the bearer has successfully completed a 6-session online workshop that covers Introduction to Lisk Blockchain, Introduction to Solidity Programming Language, Building UI and Application Frameworks, Web3 Application Ideas Brainstorming, Developing Your First Web3 Application on Lisk and Exploring Advanced Web3 Application Development on Lisk.");
+    } else if(certificateTemplate.includes("icp-bootcamp")) {
+      setCertificateName("Learn to deploy dApp on ICP");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Workshop");
+      setCertificateType("Certificate of Completion");
+      setCohort(1);
+      setDuration("6 sessions");
+      setStartDate("November 6, 2024");
+      setEndDate("December 11, 2024");
+      setInstructor1("Yevonnael Andrew");
+      setInstructor2("Jason Yapri");
+      setExternalUrl("https://lu.ma/kzte81f4");
+      setDescription("This is to certify that the bearer has successfully completed a 6-session workshop that covers Introduction to the Internet Computer Protocol (ICP), Smart Contract Development with Motoko, Advanced Canister and Interacting with Ethereum, Frontend Integration and dApp Development, Decentralized AI dApps and Project Deployment.");
+    } else if(certificateTemplate.includes("pba-bootcamp")) {
+      setCertificateName("Blockchain Developer Bootcamp");
+      setIssuer("Pelita Bangsa Academy");
+      setCertificateCategory("Bootcamp");
+      setCertificateType("Certificate of Completion");
+      setCohort(2);
+      setDuration("23 sessions");
+      setStartDate("September 10, 2024");
+      setEndDate("December 17, 2024");
+      setInstructor1("Jason Yapri");
+      setInstructor2("Yevonnael Andrew");
+      setExternalUrl("https://www.pelitabangsa.co.id/bootcamp");
+      setDescription("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
+    }
+  }, [certificateTemplate]);
 
   const uploadFileToIpfs = async () => {
     if (!file) {
@@ -276,6 +370,47 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     });
   }
 
+  const downloadCertificates = () => {
+    let i = 0;
+    rows.forEach(async (row) => {
+      const { fullName, certificateId } = row;
+      if (fullName && certificateId) {
+        const hash = await generateCertificate(fullName, certificateId, certificateTemplate);
+        let tempRows = rows;
+        // console.log(targetIndex);
+        // console.log(tempRows);
+        tempRows[i].fileHash = hash;
+        // console.log(tempRows);
+        setRows(tempRows);
+        setTestBool(!testBool);
+      }
+      i++;
+    });
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        console.log(json);
+        // Process the JSON data as needed
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  const importBearers = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <form
       onSubmit={(event) => {
@@ -287,6 +422,18 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
         {/* <Divider /> */}
         <CardContent>
           <Grid container spacing={3}>
+            <Grid md={12} xs={12}>
+            <FormControl fullWidth>
+                <InputLabel>Certificate Template</InputLabel>
+                <Select label="Certificate Template" name="certificateTemplate" variant="outlined" value={certificateTemplate} onChange={(e) => setCertificateTemplate(e.target.value)}>
+                  {certificateTemplates.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Certificate Name</InputLabel>
@@ -448,11 +595,36 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               </>
             ))}
             <Grid md={12} xs={12}>
-              <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
+              {/* <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button> */}
               {/* {rows[0] ? JSON.stringify(rows[0].fileHash) : ""} */}
+              <Box display="flex" gap={2}>
+                <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={importBearers}
+                  disabled={isLoading || rows.length === 0}
+                >
+                  Import Bearers
+                </Button> 
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={downloadCertificates}
+                  disabled={isLoading || rows.length === 0}
+                >
+                  Load and Download Certificates
+                </Button>
+              </Box>
             </Grid>
           </Grid>
         </CardContent>
+        {/* {excelData && (
+          <div>
+            <h2>Imported Data:</h2>
+            <pre>{JSON.stringify(excelData, null, 2)}</pre>
+          </div>
+        )} */}
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           {/* <Button type="submit" variant="contained" disabled={isLoadingIssue}>Issue Certificate</Button> */}
@@ -639,16 +811,13 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             Download URL
           </Button> */}
         </CardActions>
-        {/* {imageUrl && (
-          <CardContent>
-            <img src={imageUrl} alt="Downloaded from IPFS" style={{ maxWidth: '100%', height: 'auto' }} />
-          </CardContent>
-        )}
-        {imageUrl && (
-          <CardContent>
-            <MediaRenderer client={client} src={currentUri} />
-          </CardContent>
-        )} */}
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleExcelFileUpload}
+        />
       </Card>
     </form>
   );

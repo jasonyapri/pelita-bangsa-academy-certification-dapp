@@ -26,7 +26,7 @@ import { camelCase } from 'lodash';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
 import Modal from '@mui/material/Modal';
@@ -64,8 +64,7 @@ export default function Page(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 

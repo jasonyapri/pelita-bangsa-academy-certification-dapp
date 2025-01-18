@@ -18,8 +18,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-// const activeChain = "baseSepolia"
-const activeChain = "base"
+const activeChain = process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'true' ? process.env.NEXT_PUBLIC_TESTNET : process.env.NEXT_PUBLIC_MAINNET
 
 export const metadata = { title: `${config.site.name}` } satisfies Metadata;
 

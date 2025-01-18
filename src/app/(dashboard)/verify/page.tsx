@@ -28,7 +28,7 @@ import { camelCase } from 'lodash';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { Card, CardMedia } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { PBACERT } from "@/app/constants/contracts";
+import { PBACERT, getActiveChain } from "@/app/constants/contracts";
 import { client } from "@/app/client";
 import { getNFT } from "thirdweb/extensions/erc721";
 import { config } from '@/config';
@@ -78,8 +78,7 @@ export default function Page(): React.JSX.Element {
 
   const contract = getContract({
     client,
-    // chain: baseSepolia,
-    chain: base,
+    chain: getActiveChain(),
     address: PBACERT,
   });
 
@@ -240,7 +239,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Verify</Typography>
+          <Typography variant="h4">Verify on Testnet</Typography>
           {/* <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
             <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
               Import
