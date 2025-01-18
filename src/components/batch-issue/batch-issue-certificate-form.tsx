@@ -41,13 +41,13 @@ const certificateCategories = [
 
 const certificateTemplates = [
   // Test
-  { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
-  { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
-  { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
+  // { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
+  // { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
+  // { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
   // Production
-  // { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
-  // { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
-  // { value: 'icp-bootcamp', label: 'ICP Bootcamp' },
+  { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
+  { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
+  { value: 'icp-bootcamp', label: 'ICP Bootcamp' },
 ] as const;
 
 const certificateTypes = [
