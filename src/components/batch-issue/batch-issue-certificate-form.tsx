@@ -30,6 +30,7 @@ import { toast } from 'react-toastify';
 import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
 import { generateCertificates } from '@/components/certificate/generate-certificate';
+import * as XLSX from 'xlsx';
 
 const certificateCategories = [
   { value: 'Bootcamp', label: 'Bootcamp' },
@@ -63,6 +64,43 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
   const [pdfHash, setPDFHash] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [excelData, setExcelData] = useState<object[] | unknown[] | null>(null);
+
+  const handleExcelFileUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      if (event.target?.result) {
+        const workbook = XLSX.read(event.target.result, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+        if (sheetData.length > 0) {
+          const newRows = await Promise.all(sheetData.map(async (row: any, index: number) => {
+            const id = await generateRandomCertificateId();
+            return {
+              ...row,
+              fullName: row['full_name'] || '',
+              walletAddress: row['wallet_address'] || '',
+              certificateId: convertToHex(id),
+              certificateIdNumber: BigInt(id),
+              fileHash: null,
+              dataHash: ''
+            };
+          }));
+
+          setRows(newRows);
+        }
+        
+      }
+    };
+
+    reader.readAsBinaryString(file);
+  };
+
 
   const handlePDFFileChange = (event: any, index: number) => {
     const selectedFile = event.target.files[0];
@@ -286,6 +324,29 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     });
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        console.log(json);
+        // Process the JSON data as needed
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  const importBearers = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <form
       onSubmit={(event) => {
@@ -464,16 +525,30 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                 <Button variant="contained" onClick={() => handleAddRow()} disabled={isLoading}>Add Recipient</Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="success"
+                  onClick={importBearers}
+                  disabled={isLoading || rows.length === 0}
+                >
+                  Import Bearers
+                </Button> 
+                <Button
+                  variant="contained"
+                  color="info"
                   onClick={downloadCertificates}
                   disabled={isLoading || rows.length === 0}
                 >
-                  Download Certificates
+                  Load and Download Certificates
                 </Button>
               </Box>
             </Grid>
           </Grid>
         </CardContent>
+        {/* {excelData && (
+          <div>
+            <h2>Imported Data:</h2>
+            <pre>{JSON.stringify(excelData, null, 2)}</pre>
+          </div>
+        )} */}
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           {/* <Button type="submit" variant="contained" disabled={isLoadingIssue}>Issue Certificate</Button> */}
@@ -660,16 +735,13 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             Download URL
           </Button> */}
         </CardActions>
-        {/* {imageUrl && (
-          <CardContent>
-            <img src={imageUrl} alt="Downloaded from IPFS" style={{ maxWidth: '100%', height: 'auto' }} />
-          </CardContent>
-        )}
-        {imageUrl && (
-          <CardContent>
-            <MediaRenderer client={client} src={currentUri} />
-          </CardContent>
-        )} */}
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleExcelFileUpload}
+        />
       </Card>
     </form>
   );

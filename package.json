@@ -46,6 +46,7 @@
     "react-hook-form": "7.52.0",
     "react-toastify": "^10.0.5",
     "thirdweb": "^5",
+    "xlsx": "^0.18.5",
     "zod": "3.23.8"
   },
   "devDependencies": {
