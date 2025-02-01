@@ -39,11 +39,12 @@ const certificateCategories = [
   { value: 'Miscellaneous', label: 'Miscellaneous' },
 ] as const;
 
-const certificateTemplates = [
+const certificateTemplates = process.env.NEXT_PUBLIC_DEVELOPMENT_MODE == 'true' ? [
   // Test
-  // { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
-  // { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
-  // { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
+  { value: 'test-pba-bootcamp', label: 'Test PBA Bootcamp' },
+  { value: 'test-lisk-bootcamp', label: 'Test Lisk Bootcamp' },
+  { value: 'test-icp-bootcamp', label: 'Test ICP Bootcamp' },
+] : [
   // Production
   { value: 'pba-bootcamp', label: 'PBA Bootcamp' },
   { value: 'lisk-bootcamp', label: 'Lisk Bootcamp' },
@@ -113,6 +114,10 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
     reader.readAsBinaryString(file);
   };
+
+  useEffect(() => {
+    console.log(certificateTemplates);
+  }, []);
 
 
   const handlePDFFileChange = (event: any, index: number) => {
