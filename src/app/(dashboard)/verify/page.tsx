@@ -207,10 +207,12 @@ export default function Page(): React.JSX.Element {
     };
 
     if (!isFetchingGetCertificateTokenIdBasedOnFileHash) {
-      console.log("receivedTokenId", receivedTokenId);
-      if (receivedTokenId) {
+      // Skip if we're not searching a PDF hash
+      if (certificateIdFileHash.current === '0x0') return;
+
+      if (receivedTokenId && receivedTokenId !== BigInt(0)) {
         getNFTCertificate(receivedTokenId);
-      } else{
+      } else {
         setIsLoading(false);
         setCertificate(null);
       }
@@ -297,7 +299,7 @@ export default function Page(): React.JSX.Element {
             // multiple
           />
         </Button>
-        {/* {JSON.stringify(receivedTokenId?.toString())} */}
+        {/* {JSON.stringify(isFetchingGetCertificateTokenIdBasedOnFileHash ? 'true' : 'false')} */}
         {/* <Button onClick={() => {refetch()}}>Test</Button> */}
       </Card>
       <Card>
