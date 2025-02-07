@@ -142,12 +142,12 @@ export default function Page(): React.JSX.Element {
       setLastTriggeredCertificateId(rawNft.certificateId);
       setCertificateId(rawNft.certificateId);
       setCertificate(rawNft);
+      certificateIdFileHash.current = '0x0';
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    
     const getNFTCertificate = async (_certificateTokenId: bigint) => {
       // console.log("fetching NFT");
       const nft = await getNFT({
