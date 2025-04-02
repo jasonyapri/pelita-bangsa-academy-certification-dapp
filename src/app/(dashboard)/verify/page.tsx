@@ -258,49 +258,43 @@ export default function Page(): React.JSX.Element {
         </div> */}
       </Stack>
       <Card sx={{ p: 2 }}>
-        <ButtonGroup variant="outlined" aria-label="Basic button group">
-          <OutlinedInput
-            value={certificateId}
-            onChange={handleInputChange}
-            placeholder="Search Certificate by ID"
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+          <ButtonGroup variant="outlined" aria-label="Basic button group">
+            <OutlinedInput
+              value={certificateId}
+              onChange={handleInputChange}
+              placeholder="Search Certificate by ID"
+              disabled={isLoading}
+              startAdornment={
+                <InputAdornment position="start">
+                  <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
+                </InputAdornment>
+              }
+            />
+            <LoadingButton sx={{ p: 2 }} loading={isLoading} loadingPosition="start" variant="contained" startIcon={(<MagnifyingGlassIcon />)} onClick={searchCertificateById} disabled={certificateId == lastTriggeredCertificateId || !client}>
+              Verify
+            </LoadingButton>
+          </ButtonGroup>
+          <Typography variant="h6" sx={{ textAlign: 'center' }}>OR</Typography>
+          <Button
+            component="label"
+            role={undefined}
+            variant="contained"
+            tabIndex={-1}
+            startIcon={<CertificateIcon />}
+            color='secondary'
+            sx={{ p: 2, width: { xs: '100%', sm: 'auto' } }}
             disabled={isLoading}
-            startAdornment={
-              <InputAdornment position="start">
-                <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
-              </InputAdornment>
-            }
-          />
-          <LoadingButton sx={{ p: 2 }} loading={isLoading} loadingPosition="start" variant="contained" startIcon={(<MagnifyingGlassIcon />)} onClick={searchCertificateById} disabled={certificateId == lastTriggeredCertificateId || !client}>
-            Verify
-          </LoadingButton>
-        </ButtonGroup>
-        {/* <>
-            <div>certificateId: {certificateId ? certificateId.toString() : "undefined"}</div>
-            <div>certificateIdNumber: {certificateIdNumber ? certificateIdNumber.toString() : "undefined"}</div>
-            <div>certificateIdNumberParam: {certificateIdNumberParam ? certificateIdNumberParam.toString() : "undefined"}</div>
-            <div>certificateIdExists: {certificateIdExists ? "true" : "false"}</div>
-        </> */}
-        <Box sx={{ mx: 5, display: 'inline' }}> OR </Box>
-        <Button
-          component="label"
-          role={undefined}
-          variant="contained"
-          tabIndex={-1}
-          startIcon={<CertificateIcon />}
-          color='secondary'
-          sx={{ p: 2 }}
-          disabled={isLoading}
-        >
-          Upload PDF Certificate
-          <VisuallyHiddenInput
-            type="file"
-            accept="application/pdf"
-            onChange={handlePDFFileChange}
-            // multiple
-          />
-        </Button>
-        {/* {JSON.stringify(isFetchingGetCertificateTokenIdBasedOnFileHash ? 'true' : 'false')} */}
-        {/* <Button onClick={() => {refetch()}}>Test</Button> */}
+          >
+            Upload PDF Certificate
+            <VisuallyHiddenInput
+              type="file"
+              accept="application/pdf"
+              onChange={handlePDFFileChange}
+              // multiple
+            />
+          </Button>
+        </Stack>
       </Card>
       <Card>
         {/* <div>nextTokenId: { nextTokenId == undefined ? "undefined" : nextTokenId.toString() }</div>
