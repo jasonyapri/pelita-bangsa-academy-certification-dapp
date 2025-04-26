@@ -31,6 +31,9 @@ import { upload, download, resolveScheme } from "thirdweb/storage";
 import { keccak256 } from 'js-sha3';
 import { generateCertificate } from '@/components/certificate/generate-certificate';
 import * as XLSX from 'xlsx';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { styled } from '@mui/material/styles';
 
 const certificateCategories = [
   { value: 'Bootcamp', label: 'Bootcamp' },
@@ -54,7 +57,18 @@ const certificateTemplates = process.env.NEXT_PUBLIC_DEVELOPMENT_MODE == 'true' 
 const certificateTypes = [
   { value: 'Certificate of Completion', label: 'Certificate of Completion' },
 ] as const;
-import { styled } from '@mui/material/styles';
+
+const YellowSwitch = styled(Switch)(({ theme }) => ({
+  '& .MuiSwitch-switchBase.Mui-checked': {
+    color: '#FFD54F',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 213, 79, 0.08)',
+    },
+  },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+    backgroundColor: '#FFD54F',
+  },
+}));
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -78,6 +92,11 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [pdfHash, setPDFHash] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [excelData, setExcelData] = useState<object[] | unknown[] | null>(null);
+  const [generateCertId, setGenerateCertId] = useState<boolean>(true);
+
+  // useEffect(() => {
+  //   console.log('generateCertId changed:', generateCertId);
+  // }, [generateCertId]);
 
   const handleExcelFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
@@ -94,16 +113,28 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
         if (sheetData.length > 0) {
           const newRows = await Promise.all(sheetData.map(async (row: any, index: number) => {
-            const id = await generateRandomCertificateId();
-            return {
-              ...row,
-              fullName: row['full_name'] || '',
-              walletAddress: row['wallet_address'] || '',
-              certificateId: convertToHex(id),
-              certificateIdNumber: BigInt(id),
-              fileHash: null,
-              dataHash: ''
-            };
+            if (generateCertId) {
+              const id = await generateRandomCertificateId();
+              return {
+                ...row,
+                fullName: row['full_name'] || '',
+                walletAddress: row['wallet_address'] || '',
+                certificateId: convertToHex(id),
+                certificateIdNumber: BigInt(id),
+                fileHash: null,
+                dataHash: ''
+              };
+            } else{
+              return {
+                ...row,
+                fullName: row['full_name'] || '',
+                walletAddress: row['wallet_address'] || '',
+                certificateId: '',
+                certificateIdNumber: BigInt(0),
+                fileHash: null,
+                dataHash: ''
+              };
+            }
           }));
 
           setRows(newRows);
@@ -117,6 +148,8 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
   useEffect(() => {
     console.log(certificateTemplates);
+    // console.log(hexToBigInt("5AC620C032"));
+    // console.log(typeof hexToBigInt("5AC620C032"));
   }, []);
 
 
@@ -168,6 +201,10 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     }
   };
 
+  const hexToBigInt = (hexString: string): bigint => {
+    return BigInt("0x" + hexString);
+  };
+
   const contract = getContract({
     client,
     chain: getActiveChain(),
@@ -191,7 +228,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
 
   const handleAddRow = () => {
     generateRandomCertificateId().then((id) => {
-      let tempRow = { fullName: '', walletAddress: '', certificateId: convertToHex(id), certificateIdNumber: BigInt(id), fileHash: null, dataHash: '' };
+      let tempRow = { fullName: '', walletAddress: '', certificateId: generateCertId ? convertToHex(id) : "", certificateIdNumber: BigInt(id), fileHash: null, dataHash: '' };
       setRows([...rows, tempRow]);
       // console.log("--- handleAddRow");
     });
@@ -388,6 +425,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
         // console.log(tempRows);
         setRows(tempRows);
         setTestBool(!testBool);
+        // setTimeout(() => {}, 300); // TODO: go back to this
       }
       i++;
     });
@@ -586,10 +624,13 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                   <ButtonGroup variant="outlined" aria-label="Basic button group">
                     <FormControl fullWidth required>
                       <InputLabel>Certificate ID</InputLabel>
-                      <OutlinedInput label="Certificate ID" name="certificateId" value={row.certificateId} disabled={true} />
-                      {/* <div>{certificateIdExists == undefined ? "undefined" : (certificateIdExists == true ? 'true' : 'false')}</div>
-                      <div>Error: {JSON.stringify(error)}</div>
-                      <Button onClick={testFunction}>Refetch</Button> */}
+                      <OutlinedInput 
+                        label="Certificate ID" 
+                        name="certificateId" 
+                        value={row.certificateId} 
+                        disabled={generateCertId}
+                        onChange={(e) => { row.certificateIdNumber = hexToBigInt(e.target.value); return handleInputChange(index, 'certificateId', e.target.value); }}
+                      />
                     </FormControl>
                     <LoadingButton sx={{ p: 2 }} color='error' loadingPosition="start" variant="contained" onClick={() => { if (rows.length > 1) handleRemoveRow(index) }} disabled={rows.length <= 1}>
                       <TrashIcon />
@@ -612,6 +653,15 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                 >
                   Import Bearers
                 </Button> 
+                <FormControlLabel
+                  control={
+                    <YellowSwitch
+                      checked={generateCertId}
+                      onChange={(e) => { setGenerateCertId(e.target.checked) }}
+                    />
+                  }
+                  label="Generate Cert ID"
+                />
                 <Button
                   variant="contained"
                   color="info"
