@@ -129,8 +129,8 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                 ...row,
                 fullName: row['full_name'] || '',
                 walletAddress: row['wallet_address'] || '',
-                certificateId: '',
-                certificateIdNumber: BigInt(0),
+                certificateId: row['cert_id'] || '',
+                certificateIdNumber: row['cert_id'] ? hexToBigInt(row['cert_id']) : BigInt(0),
                 fileHash: null,
                 dataHash: ''
               };
