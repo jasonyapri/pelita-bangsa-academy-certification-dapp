@@ -147,7 +147,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   };
 
   useEffect(() => {
-    console.log(certificateTemplates);
+    // console.log(certificateTemplates);
     // console.log(hexToBigInt("5AC620C032"));
     // console.log(typeof hexToBigInt("5AC620C032"));
   }, []);
@@ -412,21 +412,21 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
     });
   }
 
-  const downloadCertificates = () => {
-    rows.forEach(async (row, i) => {
-      const { fullName, certificateId } = row;
+  const downloadCertificates = async () => {
+    for (let i = 0; i < rows.length; i++) {
+      const { fullName, certificateId } = rows[i];
       if (fullName && certificateId) {
         const hash = await generateCertificate(fullName, certificateId, certificateTemplate);
-        let tempRows = rows;
-        // console.log(targetIndex);
-        // console.log(tempRows);
-        tempRows[i].fileHash = hash;
-        // console.log(tempRows);
-        setRows(tempRows);
+        setRows(prevRows => {
+          const newRows = [...prevRows];
+          newRows[i] = { ...newRows[i], fileHash: hash };
+          return newRows;
+        });
         setTestBool(!testBool);
-        // setTimeout(() => {}, 300); // TODO: go back to this
+        // Add a small delay between each certificate generation
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
-    });
+    }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -841,8 +841,12 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
           >
             Batch Issue Certificate
           </TransactionButton>
-          {/* <Button onClick={() => resetRecipients()}>Reset Recipients</Button>
-          <Button onClick={() => console.log(rows)}>LogRows</Button> */}
+          {process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'true' && (
+            <>
+              <Button onClick={() => resetRecipients()}>Reset Recipients</Button>
+              <Button onClick={() => console.log(rows)}>LogRows</Button>
+            </>
+          )}
           {/* <Button
             onClick={() => {
               uploadFileToIpfs().then((uri) => {
