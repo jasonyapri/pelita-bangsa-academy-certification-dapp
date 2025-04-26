@@ -491,7 +491,7 @@ export function IssueCertificateForm(): React.JSX.Element {
               toast.success(
                 <div>
                   Certificate issued. Tx Hash:{' '}
-                  <a href={`https://${process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'sepolia.' ? "" : ""}basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://${process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'true' ? "sepolia." : ""}basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
                     {receipt.transactionHash}
                   </a>
                 </div>

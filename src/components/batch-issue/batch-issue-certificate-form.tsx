@@ -413,8 +413,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   }
 
   const downloadCertificates = () => {
-    let i = 0;
-    rows.forEach(async (row) => {
+    rows.forEach(async (row, i) => {
       const { fullName, certificateId } = row;
       if (fullName && certificateId) {
         const hash = await generateCertificate(fullName, certificateId, certificateTemplate);
@@ -427,7 +426,6 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
         setTestBool(!testBool);
         // setTimeout(() => {}, 300); // TODO: go back to this
       }
-      i++;
     });
   };
 
@@ -829,7 +827,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
               toast.success(
                 <div>
                   Certificates issued. Tx Hash:{' '}
-                  <a href={`https://${process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'sepolia.' ? "" : ""}basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://${process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === 'true' ? "sepolia." : ""}basescan.org/tx/${receipt.transactionHash}`} target="_blank" rel="noopener noreferrer">
                     {receipt.transactionHash}
                   </a>
                 </div>
