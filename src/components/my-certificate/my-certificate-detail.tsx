@@ -146,6 +146,22 @@ export function MyCertificateDetail(certificate: any): React.JSX.Element {
                   {certificate.certificate.instructor2}
                 </TableCell>
               </TableRow>
+              <TableRow hover>
+                <TableCell variant='head'>
+                   Instructor 3
+                </TableCell>
+                <TableCell>
+                  {certificate.certificate.instructor3 ?? "-"}
+                </TableCell>
+              </TableRow>
+              <TableRow hover>
+                <TableCell variant='head'>
+                Instructor 4
+                </TableCell>
+                <TableCell>
+                  {certificate.certificate.instructor4 ?? "-"}
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
           </Grid>

@@ -264,6 +264,8 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [endDate, setEndDate] = useState("");
   const [instructor1, setInstructor1] = useState("");
   const [instructor2, setInstructor2] = useState("");
+  const [instructor3, setInstructor3] = useState("");
+  const [instructor4, setInstructor4] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
   const [certificateId, setCertificateId] = useState("0000000000");
   const [certificateIdNumber, setCertificateIdNumber] = useState<bigint>(BigInt(0));
@@ -310,14 +312,16 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
       setIssuer("Pelita Bangsa Academy");
       setCertificateCategory("Bootcamp");
       setCertificateType("Certificate of Completion");
-      setCohort(2);
-      setDuration("23 sessions");
-      setStartDate("September 10, 2024");
-      setEndDate("December 17, 2024");
-      setInstructor1("Jason Yapri");
-      setInstructor2("Yevonnael Andrew");
+      setCohort(4);
+      setDuration("32 sessions");
+      setStartDate("September 13, 2025");
+      setEndDate("December 20, 2025");
+      setInstructor1("Heinrich Wisesa");
+      setInstructor2("William Gondowidjaja");
+      setInstructor3("Jason Yapri");
+      setInstructor4("Yevonnael Andrew");
       setExternalUrl("https://www.pelitabangsa.co.id/bootcamp");
-      setDescription("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Frontend Integration and Professional Development.");
+      setDescription("This is to certify that the bearer has successfully completed a 3-month online bootcamp that covers Blockchain and Cryptography Fundamentals, EVM, Solidity Smart Contract Development, Advanced Patterns, Testing, Gas Optimization, Yul, Security, Deployment, Advanced Frontend Integration, Advanced DeFi Engineering, and Future Blockchain Innovations.");
     }
   }, [certificateTemplate]);
 
@@ -549,6 +553,18 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
             </Grid>
             <Grid md={6} xs={12}>
               <FormControl fullWidth required>
+                <InputLabel>Instructor 3</InputLabel>
+                <OutlinedInput label="Instructor 3" name="instructor3" value={instructor3} onChange={(e) => setInstructor3(e.target.value)} />
+              </FormControl>
+            </Grid>
+            <Grid md={6} xs={12}>
+              <FormControl fullWidth required>
+                <InputLabel>Instructor 4</InputLabel>
+                <OutlinedInput label="Instructor 4" name="instructor4" value={instructor4} onChange={(e) => setInstructor4(e.target.value)} />
+              </FormControl>
+            </Grid>
+            <Grid md={6} xs={12}>
+              <FormControl fullWidth required>
                 <InputLabel>External URL</InputLabel>
                 <OutlinedInput label="External URL" name="externalUrl" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
               </FormControl>
@@ -767,6 +783,14 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
                     {
                         "trait_type": "Instructor 2",
                         "value": instructor2
+                    },
+                    {
+                        "trait_type": "Instructor 3",
+                        "value": instructor3
+                    },
+                    {
+                        "trait_type": "Instructor 4",
+                        "value": instructor4
                     },
                     {
                         "display_type": "date", 
