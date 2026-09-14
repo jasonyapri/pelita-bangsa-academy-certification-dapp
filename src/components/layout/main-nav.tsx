@@ -116,7 +116,7 @@ export function MainNav(): React.JSX.Element {
               client={client}
               theme="light"
               appMetadata={{
-                name: "Pelita Bangsa Academy Certification dApp",
+                name: "PBA Labs Certificate System",
                 url: "https://certificate.pelitabangsa.co.id",
               }}
             />

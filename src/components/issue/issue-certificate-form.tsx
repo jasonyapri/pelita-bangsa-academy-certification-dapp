@@ -108,7 +108,7 @@ export function IssueCertificateForm(): React.JSX.Element {
   const [fullName, setFullName] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [certificateName, setCertificateName] = useState("Blockchain Developer Bootcamp");
-  const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
+  const [issuer, setIssuer] = useState("PBA Labs");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);

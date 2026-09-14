@@ -255,7 +255,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   const [certificateTemplate, setCertificateTemplate] = useState("test-pba-bootcamp");
 
   const [certificateName, setCertificateName] = useState("");
-  const [issuer, setIssuer] = useState("Pelita Bangsa Academy");
+  const [issuer, setIssuer] = useState("PBA Labs");
   const [certificateCategory, setCertificateCategory] = useState("Bootcamp");
   const [certificateType, setCertificateType] = useState("Certificate of Completion");
   const [cohort, setCohort] = useState(1);
@@ -283,7 +283,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
   useEffect(() => {
     if (certificateTemplate.includes("lisk-bootcamp")) {
       setCertificateName("BUIDL Your Web3 Ideas with Lisk");
-      setIssuer("Pelita Bangsa Academy");
+      setIssuer("PBA Labs");
       setCertificateCategory("Workshop");
       setCertificateType("Certificate of Completion");
       setCohort(1);
@@ -296,7 +296,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
       setDescription("This is to certify that the bearer has successfully completed a 6-session online workshop that covers Introduction to Lisk Blockchain, Introduction to Solidity Programming Language, Building UI and Application Frameworks, Web3 Application Ideas Brainstorming, Developing Your First Web3 Application on Lisk and Exploring Advanced Web3 Application Development on Lisk.");
     } else if(certificateTemplate.includes("icp-bootcamp")) {
       setCertificateName("Learn to deploy dApp on ICP");
-      setIssuer("Pelita Bangsa Academy");
+      setIssuer("PBA Labs");
       setCertificateCategory("Workshop");
       setCertificateType("Certificate of Completion");
       setCohort(1);
@@ -309,7 +309,7 @@ export function BatchIssueCertificateForm(): React.JSX.Element {
       setDescription("This is to certify that the bearer has successfully completed a 6-session workshop that covers Introduction to the Internet Computer Protocol (ICP), Smart Contract Development with Motoko, Advanced Canister and Interacting with Ethereum, Frontend Integration and dApp Development, Decentralized AI dApps and Project Deployment.");
     } else if(certificateTemplate.includes("pba-bootcamp")) {
       setCertificateName("Blockchain Developer Bootcamp");
-      setIssuer("Pelita Bangsa Academy");
+      setIssuer("PBA Labs");
       setCertificateCategory("Bootcamp");
       setCertificateType("Certificate of Completion");
       setCohort(4);
